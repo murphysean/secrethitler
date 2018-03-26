@@ -59,19 +59,21 @@ func ServerSentEventsHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "event: %s\n", e.GetType())
 			//TODO Before sending an event, filter it for the auth'd user
 			fmt.Fprintf(w, "data: %s\n\n", b)
-		case <-time.After(time.Second * 30):
+		case <-time.After(time.Minute * 5):
 			fmt.Fprintf(w, ": keepalive\n\n")
 		case <-cnotchan:
 			return
 		}
 		//Optionally also include a seperate event sending the whole state for the client to sync on
-		fmt.Fprintln(w, "event: state")
-		//TODO Before sending the state, filter it for the auth'd user
-		b, err := json.Marshal(&theGame.Game)
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Fprintf(w, "data: %s\n\n", b)
+		/*
+			fmt.Fprintln(w, "event: state")
+			//TODO Before sending the state, filter it for the auth'd user
+			b, err := json.Marshal(&theGame.Game)
+			if err != nil {
+				fmt.Println(err)
+			}
+			fmt.Fprintf(w, "data: %s\n\n", b)
+		*/
 		//Flush the data down the pipe
 		flusher.Flush()
 	}

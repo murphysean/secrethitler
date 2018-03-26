@@ -121,14 +121,14 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		} else {
 			return errors.New("No cards available to discard")
 		}
+		found := false
 		for _, c := range g.Round.Policies {
-			found := false
 			if c == ple.Discard {
 				found = true
 			}
-			if !found {
-				return errors.New("Discarded policy must be one of the available options")
-			}
+		}
+		if !found {
+			return errors.New("Discarded policy must be one of the available options")
 		}
 	case TypePlayerInvestigate:
 		ope := e.(PlayerPlayerEvent)

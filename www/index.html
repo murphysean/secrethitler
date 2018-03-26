@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Secret Hitler Server</title>
 <script>
+tempState = {"eventID":14,"state":"started","draw":["facist","facist","liberal","facist","facist","facist"],"discard":["liberal","facist","facist"],"liberal":3,"facist":3,"players":[{"id":"1","name":"Player 1","party":"facist","role":"hitler","ready":true,"ack":true},{"id":"2","name":"Player 2","party":"facist","role":"facist","ready":true,"ack":true},{"id":"3","name":"Player 3","party":"facist","role":"facist","ready":true,"ack":true},{"id":"4","name":"Player 4","party":"liberal","role":"liberal","ready":true,"ack":true},{"id":"5","name":"Player 5","party":"liberal","role":"liberal","ready":true,"ack":true},{"id":"6","name":"Player 6","party":"liberal","role":"liberal","ready":true,"ack":true},{"id":"7","name":"Player 7","party":"liberal","role":"liberal","ready":true,"ack":true},{"id":"8","name":"Player 8","party":"liberal","role":"liberal","ready":true,"ack":true}],"round":{"id":9,"presidentID":"1","chancellorID":"2","state":"legislating","votes":[{"playerID":"1","vote":true},{"playerID":"2","vote":true},{"playerID":"3","vote":true},{"playerID":"4","vote":true},{"playerID":"5","vote":true},{"playerID":"6","vote":true},{"playerID":"7","vote":true},{"playerID":"8","vote":true}],"policies":["facist","facist","liberal"]},"nextPresidentID":"2","previousPresidentID":"1","previousChancellorID":"2","specialElectionRoundID":8,"specialElectionPresidentID":"6"}
 function playerJoin(id,name){
 fetch("/api/event", {
 method: 'POST',
@@ -66,8 +67,78 @@ fetch("/api/event", {
 method: 'POST',
 body: JSON.stringify({
 "type":"player.vote",
-"vote": {"playerID":id,"vote":vote}
+"playerID":id,
+"vote":vote
 }), 
+headers: new Headers({'Content-Type': 'application/json'})
+}).then(res => res.json())
+.catch(error => console.error('Error:', error))
+.then(response => console.log('Success:', response));
+}
+function playerLegislate(id,discard){
+fetch("/api/event", {
+method: 'POST',
+body: JSON.stringify({
+"type":"player.legislate",
+"playerID":id,
+"discard":discard
+}), 
+headers: new Headers({'Content-Type': 'application/json'})
+}).then(res => res.json())
+.catch(error => console.error('Error:', error))
+.then(response => console.log('Success:', response));
+}
+function playerExecute(id,otherPlayerId){
+fetch("/api/event", {
+method: 'POST',
+body: JSON.stringify({
+"type":"player.execute",
+"playerID": id,
+"otherPlayerID":otherPlayerId
+}), 
+headers: new Headers({'Content-Type': 'application/json'})
+}).then(res => res.json())
+.catch(error => console.error('Error:', error))
+.then(response => console.log('Success:', response));
+}
+function putState(state){
+if(state == null){
+	state = {
+"state":"started",
+"draw":["facist","facist","liberal","facist","facist","facist","facist","facist","liberal"],
+"discard":["liberal","facist","facist"],
+"liberal":3,
+"facist":3,
+"players":[
+	{"id":"1","name":"Player 1","party":"facist","role":"hitler","ready":true,"ack":true},
+	{"id":"2","name":"Player 2","party":"facist","role":"facist","ready":true,"ack":true},
+	{"id":"3","name":"Player 3","party":"facist","role":"facist","ready":true,"ack":true},
+	{"id":"4","name":"Player 4","party":"liberal","role":"liberal","ready":true,"ack":true},
+	{"id":"5","name":"Player 5","party":"liberal","role":"liberal","ready":true,"ack":true},
+	{"id":"6","name":"Player 6","party":"liberal","role":"liberal","ready":true,"ack":true},
+	{"id":"7","name":"Player 7","party":"liberal","role":"liberal","ready":true,"ack":true},
+	{"id":"8","name":"Player 8","party":"liberal","role":"liberal","ready":true,"ack":true}
+],
+"round":{
+	"id":9,
+	"presidentID":"1",
+	"chancellorID":"",
+	"state":"nominating",
+	"votes":[],
+	"policies":[],
+	"enactedPolciy":"",
+	"executiveAction":""
+},
+"nextPresidentID":"2",
+"previousPresidentID":"8",
+"previousChancellorID":"4",
+"specialElectionRoundID":8,
+"specialElectionPresidentID":"6",
+}
+}
+fetch("/api/state", {
+method: 'PUT',
+body: JSON.stringify(state), 
 headers: new Headers({'Content-Type': 'application/json'})
 }).then(res => res.json())
 .catch(error => console.error('Error:', error))

@@ -98,7 +98,32 @@ func APIEventHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		e = pe
 	case TypePlayerInvestigate:
+		pe := PlayerPlayerEvent{}
+		err = json.Unmarshal(b, &pe)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			fmt.Println(err)
+			return
+		}
+		e = pe
 	case TypePlayerSpecialElection:
+		pe := PlayerPlayerEvent{}
+		err = json.Unmarshal(b, &pe)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			fmt.Println(err)
+			return
+		}
+		e = pe
+	case TypePlayerExecute:
+		pe := PlayerPlayerEvent{}
+		err = json.Unmarshal(b, &pe)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			fmt.Println(err)
+			return
+		}
+		e = pe
 	default:
 		http.Error(w, "Unrecognized Event Type", http.StatusBadRequest)
 		fmt.Println(err)

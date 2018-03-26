@@ -19,7 +19,15 @@ func nextIndex(len, idx int) int {
 func (gs Game) createNextRound() []Event {
 	ge := GameEvent{}
 	ge.Type = TypeGameUpdate
+	ge.Game.State = GameStateStarted
 	ge.Game.Round.ID = gs.Round.ID + 1
+	ge.Game.Round.State = RoundStateVoting
+	ge.Game.Round.PresidentID = "-"
+	ge.Game.Round.ChancellorID = "-"
+	ge.Game.Round.EnactedPolicy = "-"
+	ge.Game.Round.ExecutiveAction = "-"
+	ge.Game.Round.Votes = []Vote{Vote{PlayerID: "-"}}
+	ge.Game.Round.Policies = []string{"-"}
 
 	//Is the next round a special election?
 	if ge.Game.Round.ID == gs.SpecialElectionRoundID {
@@ -106,6 +114,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 		if allReady {
 			ge := GameEvent{}
 			ge.Type = TypeGameUpdate
+			ge.Game.State = GameStateInit
 			ge.Game.Draw = make([]string, 0)
 			for i := 0; i < 11; i++ {
 				ge.Game.Draw = append(ge.Game.Draw, PolicyFacist)
@@ -206,7 +215,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 					Game: Game{
 						Draw:                 g.Draw[:len(g.Draw)-3],
 						Discard:              g.Discard,
-						FailedVotes:          0,
+						FailedVotes:          -1,
 						PreviousPresidentID:  g.Round.PresidentID,
 						PreviousChancellorID: g.Round.ChancellorID,
 						Round: Round{
@@ -259,10 +268,13 @@ func (g Game) Engine(e Event) ([]Event, error) {
 		ge := GameEvent{
 			BaseEvent: BaseEvent{Type: TypeGameUpdate},
 		}
+		//TODO If the chancellor sends a veto = true with a discard, the president will need to confirm
+		if le.Veto {
+		}
+
 		//First subtract the discarded policy from the round policies
 		ge.Game.Round.Policies = removeElement(g.Round.Policies, le.Discard)
 		//Second add it to the game discard pile
-		ge.Game.Draw = g.Draw
 		ge.Game.Discard = append(g.Discard, le.Discard)
 		//Now if there is only one remaining, play it
 		if len(ge.Game.Round.Policies) == 1 {
@@ -272,25 +284,25 @@ func (g Game) Engine(e Event) ([]Event, error) {
 			} else {
 				ge.Game.Facist = g.Facist + 1
 				//If a card was played on a facist, trigger an executive action, or ea request
-				ge.Game.Round.ExecutiveAction = g.executiveAction()
+				ge.Game.Round.ExecutiveAction = ge.Game.executiveAction()
 			}
-			if g.Facist > 5 {
+			if ge.Game.Facist > 5 {
 				ge.Game.State = GameStateFinished
 				ge.Game.WinningParty = PartyFacist
 			}
-			if g.Liberal > 4 {
+			if ge.Game.Liberal > 4 {
 				ge.Game.State = GameStateFinished
 				ge.Game.WinningParty = PartyLiberal
 			}
-			ge.Game.Round.Policies = []string{}
-		}
-		//Shuffle if there are < 3 policies in the draw pile
-		if len(ge.Game.Draw) < 3 {
-			ge.Game.Draw = append(g.Draw, g.Discard...)
-			ge.Game.Discard = []string{}
-			rand.Shuffle(len(ge.Game.Draw), func(i, j int) {
-				ge.Game.Draw[i], ge.Game.Draw[j] = ge.Game.Draw[j], ge.Game.Draw[i]
-			})
+			ge.Game.Round.Policies = []string{"-"}
+			//Shuffle if there are < 3 policies in the draw pile
+			if len(g.Draw) < 3 {
+				ge.Game.Draw = append(g.Draw, g.Discard...)
+				ge.Game.Discard = []string{"-"}
+				rand.Shuffle(len(ge.Game.Draw), func(i, j int) {
+					ge.Game.Draw[i], ge.Game.Draw[j] = ge.Game.Draw[j], ge.Game.Draw[i]
+				})
+			}
 		}
 
 		ret = append(ret, ge)
@@ -327,12 +339,12 @@ func (g Game) Engine(e Event) ([]Event, error) {
 				ret = append(ret, g.createNextRound()...)
 			}
 		}
-		if len(g.Round.Votes) > 1 {
+		if len(ge.Game.Round.Policies) > 1 {
 			//Trigger a legislate chancellor with the remaining cards
 			ret = append(ret, RequestEvent{
 				BaseEvent: BaseEvent{Type: TypeRequestLegislate},
 				PlayerID:  g.Round.ChancellorID,
-				Policies:  g.Round.Policies,
+				Policies:  ge.Game.Round.Policies,
 			})
 		}
 	case TypePlayerInvestigate:
