@@ -1,4 +1,4 @@
-package main
+package sh
 
 import (
 	"context"
@@ -13,13 +13,32 @@ const (
 	PolicyFacist  = "facist"
 	PolicyLiberal = "liberal"
 	PolicyMasked  = "masked"
-	RoleFacist    = "facist"
-	RoleLiberal   = "liberal"
-	RoleHitler    = "hitler"
-	RoleMasked    = "masked"
-	PartyFacist   = "facist"
-	PartyLiberal  = "liberal"
-	PartyMasked   = "masked"
+
+	RoleFacist  = "facist"
+	RoleLiberal = "liberal"
+	RoleHitler  = "hitler"
+	RoleMasked  = "masked"
+
+	PartyFacist  = "facist"
+	PartyLiberal = "liberal"
+	PartyMasked  = "masked"
+
+	GameStateLobby    = ""
+	GameStateInit     = "init"
+	GameStateStarted  = "started"
+	GameStateFinished = "finished"
+
+	RoundStateNominating      = "nominating"
+	RoundStateVoting          = "voting"
+	RoundStateFailed          = "failed"
+	RoundStateLegislating     = "legislating"
+	RoundStateExecutiveAction = "executive_action"
+	RoundStateFinished        = "finished"
+
+	ExecutiveActionInvestigate     = "investigate"
+	ExecutiveActionPeek            = "peek"
+	ExecutiveActionSpecialElection = "special_election"
+	ExecutiveActionExecute         = "execute"
 )
 
 func NewSecretHitler() *SecretHitler {

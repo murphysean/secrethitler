@@ -1,27 +1,10 @@
-package main
+package sh
 
 import (
 	"time"
 )
 
 const (
-	GameStateLobby    = ""
-	GameStateInit     = "init"
-	GameStateStarted  = "started"
-	GameStateFinished = "finished"
-
-	RoundStateNominating      = "nominating"
-	RoundStateVoting          = "voting"
-	RoundStateFailed          = "failed"
-	RoundStateLegislating     = "legislating"
-	RoundStateExecutiveAction = "executive_action"
-	RoundStateFinished        = "finished"
-
-	ExecutiveActionInvestigate     = "investigate"
-	ExecutiveActionPeek            = "peek"
-	ExecutiveActionSpecialElection = "special_election"
-	ExecutiveActionExecute         = "execute"
-
 	TypePlayerJoin            = "player.join"
 	TypePlayerReady           = "player.ready"
 	TypePlayerAcknowledge     = "player.acknowledge"

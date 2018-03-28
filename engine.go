@@ -1,4 +1,4 @@
-package main
+package sh
 
 import (
 	"math/rand"
@@ -94,7 +94,7 @@ func (g Game) executiveAction() string {
 	return ""
 }
 
-//TODO The engine will read the incoming event and process it to see if a new event
+//The engine will read the incoming event and process it to see if a new event
 // should be created to update the game state. This function itself should not modify the game
 // state in any way other than returning events that will.
 func (g Game) Engine(e Event) ([]Event, error) {
@@ -270,6 +270,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 		}
 		//TODO If the chancellor sends a veto = true with a discard, the president will need to confirm
 		if le.Veto {
+			//g.Round.Veto = true
 		}
 
 		//First subtract the discarded policy from the round policies
