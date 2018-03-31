@@ -70,7 +70,7 @@ func NewSecretHitler() *SecretHitler {
 type SecretHitler struct {
 	Game
 
-	log *os.File
+	Log *os.File
 	m   sync.RWMutex
 
 	//Make the engine a subscriber
@@ -91,8 +91,8 @@ func (sh *SecretHitler) SubmitEvent(ctx context.Context, e Event) error {
 	}
 	sh.Game = g
 	//Persist the event to a file
-	if sh.log != nil {
-		enc := json.NewEncoder(sh.log)
+	if sh.Log != nil {
+		enc := json.NewEncoder(sh.Log)
 		err := enc.Encode(ne)
 		if err != nil {
 			return err
@@ -102,6 +102,18 @@ func (sh *SecretHitler) SubmitEvent(ctx context.Context, e Event) error {
 		sh.BroadcastEvent(ne)
 	}()
 	return nil
+}
+
+func (sh *SecretHitler) AddSubscriber(key string, channel chan<- Event) {
+	sh.m.Lock()
+	sh.subscribers[key] = channel
+	sh.m.Unlock()
+}
+
+func (sh *SecretHitler) RemoveSubscriber(key string) {
+	sh.m.Lock()
+	delete(sh.subscribers, key)
+	sh.m.Unlock()
 }
 
 func (sh *SecretHitler) BroadcastEvent(e Event) {
