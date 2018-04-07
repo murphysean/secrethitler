@@ -14,7 +14,7 @@ func (g Game) Filter(ctx context.Context) Game {
 	g.Draw = maskedPolicies(len(g.Draw))
 	g.Discard = maskedPolicies(len(g.Discard))
 	//Filter the player roles
-	np := []Player{}
+	nps := []Player{}
 	for _, p := range g.Players {
 		np := Player{
 			ID:             p.ID,
@@ -33,8 +33,9 @@ func (g Game) Filter(ctx context.Context) Game {
 			np.Party = p.Party
 			np.Role = p.Role
 		}
+		nps = append(nps, np)
 	}
-	g.Players = np
+	g.Players = nps
 	//Filter the round votes
 	if g.Round.State == RoundStateVoting {
 		vs := make([]Vote, len(g.Round.Votes))
