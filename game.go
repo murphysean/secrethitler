@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
+	"io"
 	"sync"
 )
 
@@ -45,24 +45,40 @@ func NewSecretHitler() *SecretHitler {
 	ret := new(SecretHitler)
 	ret.subscribers = make(map[string]chan<- Event)
 	ec := make(chan Event)
+	//Make the engine a subscriber
 	ret.subscribers["engine"] = ec
 	go func() {
 		for {
 			select {
 			case e := <-ec:
-				//TODO If the game is over, then return
+				if e == nil {
+					fmt.Println("Exiting game engine loop via nil read")
+					return
+				}
 				if nes, err := ret.Engine(e); err == nil {
 					fmt.Println("engine: Produced:", nes)
 					for _, ne := range nes {
-						err = ret.SubmitEvent(context.TODO(), ne)
+						ctx := context.Background()
+						ctx = context.WithValue(ctx, "playerID", "engine")
+						err = ret.SubmitEvent(ctx, ne)
 						if err != nil {
 							fmt.Println("Apply Error:", err)
 						}
 					}
 				}
+				//If the game is over, then return
+				if ret.Game.State == GameStateFinished {
+					ret.m.Lock()
+					for k, v := range ret.subscribers {
+						delete(ret.subscribers, k)
+						close(v)
+					}
+					ret.m.Unlock()
+					break
+				}
 			}
 		}
-		fmt.Println("Exiting game engine loop")
+		fmt.Println("Exiting game engine loop via loop break")
 	}()
 	return ret
 }
@@ -70,10 +86,9 @@ func NewSecretHitler() *SecretHitler {
 type SecretHitler struct {
 	Game
 
-	Log *os.File
+	Log io.Writer
 	m   sync.RWMutex
 
-	//Make the engine a subscriber
 	subscribers map[string]chan<- Event
 }
 
@@ -105,6 +120,9 @@ func (sh *SecretHitler) SubmitEvent(ctx context.Context, e Event) error {
 }
 
 func (sh *SecretHitler) AddSubscriber(key string, channel chan<- Event) {
+	if sh.Game.State == GameStateFinished {
+		return
+	}
 	sh.m.Lock()
 	sh.subscribers[key] = channel
 	sh.m.Unlock()
@@ -122,6 +140,27 @@ func (sh *SecretHitler) BroadcastEvent(e Event) {
 	for k, _ := range sh.subscribers {
 		sh.subscribers[k] <- e
 	}
+}
+
+//ReadEventLog will read the associated event log and publish all the events to the included channel
+func ReadEventLog(r io.Reader, c chan<- Event) error {
+	//Read in a byte slice
+	d := json.NewDecoder(r)
+	var err error
+	for err == nil {
+		var rm json.RawMessage
+		err = d.Decode(&rm)
+		if err != nil {
+			return err
+		}
+		e, err := UnmarshalEvent(rm)
+		if err != nil {
+			return err
+		}
+		c <- e
+	}
+	close(c)
+	return nil
 }
 
 type Game struct {

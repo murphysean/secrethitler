@@ -8,10 +8,14 @@ import (
 //Validate ensures that an event is consistent with the current state and then
 //sends it to the event log.
 func (g Game) Validate(ctx context.Context, e Event) error {
+	pid := ctx.Value("playerID").(string)
 	//Players must all be ready for game to start
 	switch e.GetType() {
 	case TypePlayerJoin:
 		pje := e.(PlayerEvent)
+		if pje.Player.ID != pid {
+			return errors.New("PlayerID must match currently authenticated user")
+		}
 		if g.State != GameStateLobby {
 			return errors.New("Players can only join while the game is in the lobby state")
 		}
@@ -25,6 +29,9 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		}
 	case TypePlayerReady:
 		pre := e.(PlayerEvent)
+		if pre.Player.ID != pid {
+			return errors.New("PlayerID must match currently authenticated user")
+		}
 		if g.State != GameStateLobby {
 			return errors.New("Players can only ready while the game is in the lobby state")
 		}
@@ -40,6 +47,9 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		return errors.New("No player found with matching ID")
 	case TypePlayerAcknowledge:
 		pae := e.(PlayerEvent)
+		if pae.Player.ID != pid {
+			return errors.New("PlayerID must match currently authenticated user")
+		}
 		if g.State != "init" {
 			return errors.New("Players can only ack while the game is in the init state")
 		}
@@ -63,6 +73,9 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		return errors.New("No player found with matching ID")
 	case TypePlayerNominate:
 		ope := e.(PlayerPlayerEvent)
+		if ope.PlayerID != pid {
+			return errors.New("PlayerID must match currently authenticated user")
+		}
 		if g.Round.State != RoundStateNominating {
 			return errors.New("Players can only vote while the round is in the nominating state")
 		}
@@ -84,6 +97,9 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		}
 	case TypePlayerVote:
 		pve := e.(PlayerVoteEvent)
+		if pve.PlayerID != pid {
+			return errors.New("PlayerID must match currently authenticated user")
+		}
 		if g.Round.State != RoundStateVoting {
 			return errors.New("Players can only vote while the round is in the voting state")
 		}
@@ -106,6 +122,9 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		}
 	case TypePlayerLegislate:
 		ple := e.(PlayerLegislateEvent)
+		if ple.PlayerID != pid {
+			return errors.New("PlayerID must match currently authenticated user")
+		}
 		if g.Round.State != RoundStateLegislating {
 			return errors.New("Players can only legislate while the round is in the legislating state")
 		}
@@ -132,6 +151,9 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		}
 	case TypePlayerInvestigate:
 		ope := e.(PlayerPlayerEvent)
+		if ope.PlayerID != pid {
+			return errors.New("PlayerID must match currently authenticated user")
+		}
 		if g.Round.State != RoundStateExecutiveAction {
 			return errors.New("Players can only investigate while the round is in the executive_action state")
 		}
@@ -150,6 +172,9 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		}
 	case TypePlayerSpecialElection:
 		ope := e.(PlayerPlayerEvent)
+		if ope.PlayerID != pid {
+			return errors.New("PlayerID must match currently authenticated user")
+		}
 		if g.Round.State != RoundStateExecutiveAction {
 			return errors.New("Players can only call a special election while the round is in the executive_action state")
 		}
@@ -168,6 +193,9 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		}
 	case TypePlayerExecute:
 		ope := e.(PlayerPlayerEvent)
+		if ope.PlayerID != pid {
+			return errors.New("PlayerID must match currently authenticated user")
+		}
 		if g.Round.State != RoundStateExecutiveAction {
 			return errors.New("Players can only execute while the round is in the executive_action state")
 		}
@@ -183,6 +211,10 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 					return errors.New("This player has been previously executed")
 				}
 			}
+		}
+	default:
+		if pid != "admin" || pid != "engine" {
+			return errors.New("Not Authorized")
 		}
 	}
 

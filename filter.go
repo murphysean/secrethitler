@@ -26,6 +26,10 @@ func (g Game) Filter(ctx context.Context) Game {
 			InvestigatedBy: p.InvestigatedBy,
 			ExecutedBy:     p.ExecutedBy,
 		}
+		if me.ID == p.ID {
+			np.Party = p.Party
+			np.Role = p.Role
+		}
 		if me.ID == p.InvestigatedBy {
 			np.Party = p.Party
 		}
