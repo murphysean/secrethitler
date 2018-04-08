@@ -18,6 +18,10 @@ func nextIndex(len, idx int) int {
 
 func (gs Game) createNextRound() []Event {
 	ge := GameEvent{}
+	if gs.Secret == "" {
+		//TODO Generate a random secret
+		ge.Game.Secret = "testingtesting123"
+	}
 	ge.Type = TypeGameUpdate
 	ge.Game.State = GameStateStarted
 	ge.Game.Round.ID = gs.Round.ID + 1
@@ -226,7 +230,15 @@ func (g Game) Engine(e Event) ([]Event, error) {
 				})
 				ret = append(ret, RequestEvent{
 					BaseEvent: BaseEvent{Type: TypeRequestLegislate},
+					PlayerID:  g.Round.PresidentID,
 					Policies:  g.Draw[len(g.Draw)-3:],
+					Token: createToken(g.Secret, Token{
+						EventID:     g.EventID,
+						Assertion:   TypeRequestLegislate,
+						PlayerID:    g.Round.PresidentID,
+						RoundID:     g.Round.ID,
+						PolicyCount: 3,
+					}),
 				})
 			} else {
 				//If the vote failed, enact a policy if failed votes = 3
@@ -321,6 +333,12 @@ func (g Game) Engine(e Event) ([]Event, error) {
 					BaseEvent: BaseEvent{Type: TypeGameInformation},
 					PlayerID:  g.Round.PresidentID,
 					Policies:  g.Draw[len(g.Draw)-3:],
+					Token: createToken(g.Secret, Token{
+						PlayerID:  g.Round.PresidentID,
+						EventID:   g.EventID,
+						RoundID:   g.Round.ID,
+						Assertion: ExecutiveActionPeek,
+					}),
 				})
 				ret = append(ret, g.createNextRound()...)
 			case ExecutiveActionSpecialElection:
@@ -346,6 +364,13 @@ func (g Game) Engine(e Event) ([]Event, error) {
 				BaseEvent: BaseEvent{Type: TypeRequestLegislate},
 				PlayerID:  g.Round.ChancellorID,
 				Policies:  ge.Game.Round.Policies,
+				Token: createToken(g.Secret, Token{
+					EventID:     g.EventID,
+					Assertion:   TypeRequestLegislate,
+					PlayerID:    g.Round.ChancellorID,
+					RoundID:     g.Round.ID,
+					PolicyCount: 2,
+				}),
 			})
 		}
 	case TypePlayerInvestigate:
@@ -361,7 +386,13 @@ func (g Game) Engine(e Event) ([]Event, error) {
 			BaseEvent: BaseEvent{Type: TypeGameInformation},
 			PlayerID:  g.Round.PresidentID,
 			Party:     party,
-			Policies:  g.Draw[len(g.Draw)-3:],
+			Token: createToken(g.Secret, Token{
+				PlayerID:      g.Round.PresidentID,
+				OtherPlayerID: te.OtherPlayerID,
+				EventID:       g.EventID,
+				RoundID:       g.Round.ID,
+				Assertion:     ExecutiveActionInvestigate,
+			}),
 		})
 		ret = append(ret, g.createNextRound()...)
 	case TypePlayerSpecialElection:

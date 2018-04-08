@@ -120,6 +120,21 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 				g.Players[i].ExecutedBy = ne.PlayerID
 			}
 		}
+		//REACT EVENTS
+	case TypeReactPlayer:
+		fallthrough
+	case TypeReactEventID:
+		fallthrough
+	case TypeReactStatus:
+		ne := e.(ReactEvent)
+		ne.ID = g.EventID
+		ne.Moment = time.Now()
+		e = ne
+		for i, p := range g.Players {
+			if ne.PlayerID == p.ID {
+				g.Players[i].LastReaction = ne.Moment
+			}
+		}
 		//GAME EVENTS
 	case TypeGameUpdate:
 		ne := e.(GameEvent)

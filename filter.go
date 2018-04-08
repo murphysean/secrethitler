@@ -10,6 +10,10 @@ func (g Game) Filter(ctx context.Context) Game {
 		return g
 	}
 	me, _ := g.GetPlayerByID(playerID)
+	//Filter the game secret
+	if g.Secret != "" {
+		g.Secret = "masked"
+	}
 	//Filter the draw and dscard pile
 	g.Draw = maskedPolicies(len(g.Draw))
 	g.Discard = maskedPolicies(len(g.Discard))

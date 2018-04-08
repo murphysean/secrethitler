@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"sync"
+	"time"
 )
 
 const (
@@ -163,7 +164,17 @@ func ReadEventLog(r io.Reader, c chan<- Event) error {
 	return nil
 }
 
+type Token struct {
+	EventID       int    `json:"eventID"`
+	PlayerID      string `json:"playerID"`
+	Assertion     string `json:"assertion"`
+	RoundID       int    `json:"roundID"`
+	OtherPlayerID string `json:"otherPlayerID,omitempty"`
+	PolicyCount   int    `json:"policyCount,omitempty"`
+}
+
 type Game struct {
+	Secret                     string   `json:"secret,omitempty"`
 	EventID                    int      `json:"eventID,omitempty"`
 	State                      string   `json:"state,omitempty"`
 	Draw                       []string `json:"draw,omitempty"`
@@ -191,14 +202,16 @@ func (g Game) GetPlayerByID(id string) (Player, error) {
 }
 
 type Player struct {
-	ID             string `json:"id,omitempty"`
-	Name           string `json:"name,omitempty"`
-	Party          string `json:"party,omitempty"`
-	Role           string `json:"role,omitempty"`
-	Ready          bool   `json:"ready,omitempty"`
-	Ack            bool   `json:"ack,omitempty"`
-	ExecutedBy     string `json:"executedBy,omitempty"`
-	InvestigatedBy string `json:"investigatedBy,omitempty"`
+	ID             string    `json:"id,omitempty"`
+	Name           string    `json:"name,omitempty"`
+	Party          string    `json:"party,omitempty"`
+	Role           string    `json:"role,omitempty"`
+	Ready          bool      `json:"ready,omitempty"`
+	Ack            bool      `json:"ack,omitempty"`
+	ExecutedBy     string    `json:"executedBy,omitempty"`
+	InvestigatedBy string    `json:"investigatedBy,omitempty"`
+	LastReaction   time.Time `json:"lastReaction,omitempty"`
+	Status         string    `json:"status,omitempty"`
 }
 
 type Round struct {

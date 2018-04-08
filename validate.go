@@ -3,6 +3,7 @@ package sh
 import (
 	"context"
 	"errors"
+	"time"
 )
 
 //Validate ensures that an event is consistent with the current state and then
@@ -58,15 +59,12 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 				if p.Ack {
 					return errors.New("Player has already acknowledged")
 				}
-				//TODO Ensure the player properly acknowledges their role/party
-				/*
-					if p.Party != pae.Player.Party {
-						return errors.New("Player must acknowledge assigned party")
-					}
-					if p.Role != pae.Player.Role {
-						return errors.New("Player must acknowledge assigned role")
-					}
-				*/
+				if p.Party != pae.Player.Party {
+					return errors.New("Player must acknowledge assigned party")
+				}
+				if p.Role != pae.Player.Role {
+					return errors.New("Player must acknowledge assigned role")
+				}
 				return nil
 			}
 		}
@@ -212,8 +210,38 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 				}
 			}
 		}
+	case TypePlayerMessage:
+		me := e.(ReactEvent)
+		if me.PlayerID != pid {
+			return errors.New("PlayerID must match currently authenticated user")
+		}
+		if p, _ := g.GetPlayerByID(pid); time.Now().Sub(p.LastReaction) < time.Second {
+			return errors.New("Throttle limit reached on messages")
+		}
+	case TypeReactPlayer:
+		fallthrough
+	case TypeReactEventID:
+		fallthrough
+	case TypeReactStatus:
+		re := e.(ReactEvent)
+		if re.PlayerID != pid {
+			return errors.New("PlayerID must match currently authenticated user")
+		}
+		if p, _ := g.GetPlayerByID(pid); time.Now().Sub(p.LastReaction) < time.Second {
+			return errors.New("Throttle limit reached on reactions")
+		}
+	case TypeAssertPolicies:
+		ae := e.(AssertEvent)
+		if ae.PlayerID != pid {
+			return errors.New("PlayerID must match currently authenticated user")
+		}
+	case TypeAssertParty:
+		ae := e.(AssertEvent)
+		if ae.PlayerID != pid {
+			return errors.New("PlayerID must match currently authenticated user")
+		}
 	default:
-		if pid != "admin" || pid != "engine" {
+		if pid != "admin" && pid != "engine" {
 			return errors.New("Not Authorized")
 		}
 	}
