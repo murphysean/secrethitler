@@ -120,6 +120,16 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 				g.Players[i].ExecutedBy = ne.PlayerID
 			}
 		}
+	case TypePlayerMessage:
+		ne := e.(PlayerPlayerEvent)
+		ne.ID = g.EventID
+		ne.Moment = time.Now()
+		e = ne
+		for i, p := range g.Players {
+			if ne.PlayerID == p.ID {
+				g.Players[i].LastReaction = ne.Moment
+			}
+		}
 		//REACT EVENTS
 	case TypeReactPlayer:
 		fallthrough

@@ -227,8 +227,8 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		if re.PlayerID != pid {
 			return errors.New("PlayerID must match currently authenticated user")
 		}
-		if p, _ := g.GetPlayerByID(pid); time.Now().Sub(p.LastReaction) < time.Second {
-			return errors.New("Throttle limit reached on reactions")
+		if p, _ := g.GetPlayerByID(pid); re.Moment.Sub(p.LastReaction) < time.Second {
+			return errors.New("Throttle limit reached on reactions" + p.LastReaction.String() + re.Moment.String())
 		}
 	case TypeAssertPolicies:
 		ae := e.(AssertEvent)

@@ -1,6 +1,8 @@
 package sh
 
 import (
+	cr "crypto/rand"
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -16,11 +18,19 @@ func nextIndex(len, idx int) int {
 	return idx + 1
 }
 
+func genUUIDv4() string {
+	u := make([]byte, 16)
+	cr.Read(u)
+	//Set the version to 4
+	u[6] = (u[6] | 0x40) & 0x4F
+	u[8] = (u[8] | 0x80) & 0xBF
+	return fmt.Sprintf("%x-%x-%x-%x-%x", u[0:4], u[4:6], u[6:8], u[8:10], u[10:])
+}
+
 func (gs Game) createNextRound() []Event {
 	ge := GameEvent{}
 	if gs.Secret == "" {
-		//TODO Generate a random secret
-		ge.Game.Secret = "testingtesting123"
+		ge.Game.Secret = genUUIDv4()
 	}
 	ge.Type = TypeGameUpdate
 	ge.Game.State = GameStateStarted

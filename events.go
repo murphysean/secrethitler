@@ -64,6 +64,9 @@ func UnmarshalEvent(b []byte) (Event, error) {
 		if err != nil {
 			return bt, err
 		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
+		}
 		return e, nil
 	case TypePlayerNominate:
 		fallthrough
@@ -77,12 +80,18 @@ func UnmarshalEvent(b []byte) (Event, error) {
 		if err != nil {
 			return bt, err
 		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
+		}
 		return e, nil
 	case TypePlayerVote:
 		e := PlayerVoteEvent{}
 		err = json.Unmarshal(b, &e)
 		if err != nil {
 			return bt, err
+		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
 		}
 		return e, nil
 	case TypePlayerLegislate:
@@ -91,12 +100,18 @@ func UnmarshalEvent(b []byte) (Event, error) {
 		if err != nil {
 			return bt, err
 		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
+		}
 		return e, nil
 	case TypePlayerMessage:
 		e := MessageEvent{}
 		err = json.Unmarshal(b, &e)
 		if err != nil {
 			return bt, err
+		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
 		}
 		return e, nil
 	case TypeRequestAcknowledge:
@@ -113,6 +128,9 @@ func UnmarshalEvent(b []byte) (Event, error) {
 		if err != nil {
 			return bt, err
 		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
+		}
 		return e, nil
 	case TypeGameInformation:
 		e := InformationEvent{}
@@ -120,12 +138,18 @@ func UnmarshalEvent(b []byte) (Event, error) {
 		if err != nil {
 			return bt, err
 		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
+		}
 		return e, nil
 	case TypeGameUpdate:
 		e := GameEvent{}
 		err = json.Unmarshal(b, &e)
 		if err != nil {
 			return bt, err
+		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
 		}
 		return e, nil
 	case TypeReactPlayer:
@@ -138,6 +162,9 @@ func UnmarshalEvent(b []byte) (Event, error) {
 		if err != nil {
 			return bt, err
 		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
+		}
 		return e, nil
 	case TypeAssertParty:
 		fallthrough
@@ -146,6 +173,9 @@ func UnmarshalEvent(b []byte) (Event, error) {
 		err = json.Unmarshal(b, &e)
 		if err != nil {
 			return bt, err
+		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
 		}
 		return e, nil
 	default:
