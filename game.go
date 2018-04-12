@@ -152,10 +152,12 @@ func ReadEventLog(r io.Reader, c chan<- Event) error {
 		var rm json.RawMessage
 		err = d.Decode(&rm)
 		if err != nil {
+			close(c)
 			return err
 		}
 		e, err := UnmarshalEvent(rm)
 		if err != nil {
+			close(c)
 			return err
 		}
 		c <- e
@@ -174,6 +176,7 @@ type Token struct {
 }
 
 type Game struct {
+	ID                         string   `json:"id"`
 	Secret                     string   `json:"secret,omitempty"`
 	EventID                    int      `json:"eventID,omitempty"`
 	State                      string   `json:"state,omitempty"`
@@ -203,7 +206,6 @@ func (g Game) GetPlayerByID(id string) (Player, error) {
 
 type Player struct {
 	ID             string    `json:"id,omitempty"`
-	Name           string    `json:"name,omitempty"`
 	Party          string    `json:"party,omitempty"`
 	Role           string    `json:"role,omitempty"`
 	Ready          bool      `json:"ready,omitempty"`

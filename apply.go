@@ -152,6 +152,11 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 		ne.Moment = time.Now()
 		e = ne
 		//The event data, set the discard and draw pile accordingly
+		if ne.Game.ID == "-" {
+			g.ID = ""
+		} else if ne.Game.ID != "" {
+			g.ID = ne.Game.ID
+		}
 		if ne.Game.State == "-" {
 			g.State = ""
 		} else if ne.Game.State != "" {

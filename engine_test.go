@@ -28,7 +28,7 @@ func TestGameStart(t *testing.T) {
 		if e.GetType() == TypeGameUpdate {
 			ge := e.(GameEvent)
 			updateEventFound = true
-			//TODO Every player should have an assigned role
+			//Every player should have an assigned role
 			allHaveParty := true
 			allHaveRoles := true
 			for _, p := range ge.Game.Players {

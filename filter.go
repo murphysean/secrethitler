@@ -22,7 +22,6 @@ func (g Game) Filter(ctx context.Context) Game {
 	for _, p := range g.Players {
 		np := Player{
 			ID:             p.ID,
-			Name:           p.Name,
 			Ready:          p.Ready,
 			Ack:            p.Ack,
 			Party:          PartyMasked,
