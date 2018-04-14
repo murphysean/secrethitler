@@ -43,8 +43,7 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 		ne.Moment = time.Now()
 		e = ne
 		g.Round.State = RoundStateExecutiveAction
-
-		//PLAYER EVENTS
+	//PLAYER EVENTS
 	case TypePlayerJoin:
 		ne := e.(PlayerEvent)
 		ne.ID = g.EventID
@@ -121,16 +120,16 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 			}
 		}
 	case TypePlayerMessage:
-		ne := e.(PlayerPlayerEvent)
+		ne := e.(MessageEvent)
 		ne.ID = g.EventID
 		ne.Moment = time.Now()
 		e = ne
 		for i, p := range g.Players {
 			if ne.PlayerID == p.ID {
-				g.Players[i].LastReaction = ne.Moment
+				g.Players[i].LastAction = ne.Moment
 			}
 		}
-		//REACT EVENTS
+	//REACT EVENTS
 	case TypeReactPlayer:
 		fallthrough
 	case TypeReactEventID:
@@ -142,10 +141,20 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 		e = ne
 		for i, p := range g.Players {
 			if ne.PlayerID == p.ID {
-				g.Players[i].LastReaction = ne.Moment
+				g.Players[i].LastAction = ne.Moment
 			}
 		}
-		//GAME EVENTS
+	case TypeGuess:
+		ne := e.(GuessEvent)
+		ne.ID = g.EventID
+		ne.Moment = time.Now()
+		e = ne
+		for i, p := range g.Players {
+			if ne.PlayerID == p.ID {
+				g.Players[i].LastAction = ne.Moment
+			}
+		}
+	//GAME EVENTS
 	case TypeGameUpdate:
 		ne := e.(GameEvent)
 		ne.ID = g.EventID

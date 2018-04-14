@@ -212,7 +212,7 @@ type Player struct {
 	Ack            bool      `json:"ack,omitempty"`
 	ExecutedBy     string    `json:"executedBy,omitempty"`
 	InvestigatedBy string    `json:"investigatedBy,omitempty"`
-	LastReaction   time.Time `json:"lastReaction,omitempty"`
+	LastAction     time.Time `json:"lastAction,omitempty"`
 	Status         string    `json:"status,omitempty"`
 }
 

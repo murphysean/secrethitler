@@ -26,8 +26,7 @@ const (
 	TypeReactEventID = "react.event_id"
 	TypeReactStatus  = "react.status"
 
-	TypeGuessPlayer = "guess.player"
-	TypeGuessLie    = "guess.lie"
+	TypeGuess = "guess"
 
 	TypeRequestAcknowledge     = "request.acknowledge"
 	TypeRequestVote            = "request.vote"
@@ -340,6 +339,38 @@ func (e AssertEvent) Filter(ctx context.Context) Event {
 	pid := ctx.Value("playerID").(string)
 	if pid != "admin" && pid != "engine" && pid != e.PlayerID {
 		e.Token = "masked"
+	}
+	return e
+}
+
+// GuessEvent is an event a player can send to make a prediction or guess as to outcomes of the game
+type GuessEvent struct {
+	BaseEvent
+	PlayerID       string   `json:"playerID"`
+	Facists        []string `json:"facists,omitempty"`
+	SecretHitlerID string   `json:"secretHitlerID,omitempty"`
+	WinningParty   string   `json:"winningParty,omitempty"`
+	CallEventID    string   `json:"callEventID,omitempty"`
+}
+
+func (e GuessEvent) Filter(ctx context.Context) Event {
+	pid := ctx.Value("playerID").(string)
+	if pid != "admin" && pid != "engine" && pid != e.PlayerID {
+		e.PlayerID = "masked"
+		nf := []string{}
+		for _, _ = range e.Facists {
+			nf = append(nf, "masked")
+		}
+		e.Facists = nf
+		if e.SecretHitlerID != "" {
+			e.SecretHitlerID = "masked"
+		}
+		if e.WinningParty != "" {
+			e.WinningParty = "masked"
+		}
+		if e.CallEventID != "" {
+			e.CallEventID = "masked"
+		}
 	}
 	return e
 }

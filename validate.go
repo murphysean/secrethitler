@@ -211,11 +211,11 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 			}
 		}
 	case TypePlayerMessage:
-		me := e.(ReactEvent)
+		me := e.(MessageEvent)
 		if me.PlayerID != pid {
 			return errors.New("PlayerID must match currently authenticated user")
 		}
-		if p, _ := g.GetPlayerByID(pid); time.Now().Sub(p.LastReaction) < time.Second {
+		if p, _ := g.GetPlayerByID(pid); time.Now().Sub(p.LastAction) < time.Second {
 			return errors.New("Throttle limit reached on messages")
 		}
 	case TypeReactPlayer:
@@ -227,8 +227,16 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		if re.PlayerID != pid {
 			return errors.New("PlayerID must match currently authenticated user")
 		}
-		if p, _ := g.GetPlayerByID(pid); re.Moment.Sub(p.LastReaction) < time.Second {
-			return errors.New("Throttle limit reached on reactions" + p.LastReaction.String() + re.Moment.String())
+		if p, _ := g.GetPlayerByID(pid); re.Moment.Sub(p.LastAction) < time.Second {
+			return errors.New("Throttle limit reached on reactions")
+		}
+	case TypeGuess:
+		ge := e.(GuessEvent)
+		if ge.PlayerID != pid {
+			return errors.New("PlayerID must match currently authenticated user")
+		}
+		if p, _ := g.GetPlayerByID(pid); ge.Moment.Sub(p.LastAction) < time.Second {
+			return errors.New("Throttle limit reached on guesses")
 		}
 	case TypeAssertPolicies:
 		ae := e.(AssertEvent)
