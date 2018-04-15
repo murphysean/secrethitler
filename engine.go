@@ -367,6 +367,8 @@ func (g Game) Engine(e Event) ([]Event, error) {
 				//If no exeutive action, start a new round
 				ret = append(ret, g.createNextRound()...)
 			}
+		} else if ge.Game.Round.EnactedPolicy == PolicyLiberal {
+			ret = append(ret, g.createNextRound()...)
 		}
 		if len(ge.Game.Round.Policies) > 1 {
 			//Trigger a legislate chancellor with the remaining cards
