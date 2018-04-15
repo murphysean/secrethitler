@@ -166,6 +166,11 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 		} else if ne.Game.ID != "" {
 			g.ID = ne.Game.ID
 		}
+		if ne.Game.Secret == "-" {
+			g.Secret = ""
+		} else if ne.Game.Secret != "" {
+			g.Secret = ne.Game.Secret
+		}
 		if ne.Game.State == "-" {
 			g.State = ""
 		} else if ne.Game.State != "" {

@@ -63,7 +63,9 @@ func NewSecretHitler() *SecretHitler {
 						ctx = context.WithValue(ctx, "playerID", "engine")
 						err = ret.SubmitEvent(ctx, ne)
 						if err != nil {
-							fmt.Println("Apply Error:", err)
+							fmt.Println("engine:Submit Error:", err)
+						} else {
+							fmt.Println("engine:Submitted", ne)
 						}
 					}
 				}
