@@ -75,9 +75,8 @@ func maskedPolicies(policies []string, exceptlast3 bool) []string {
 	ret := make([]string, len(policies))
 	for i := 0; i < len(policies); i++ {
 		ret[i] = PolicyMasked
-		if exceptlast3 && i > len(policies)-3 {
+		if exceptlast3 && i > len(policies)-4 {
 			ret[i] = policies[i]
-
 		}
 	}
 	return ret

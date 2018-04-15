@@ -252,7 +252,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 				})
 			} else {
 				//If the vote failed, enact a policy if failed votes = 3
-				if g.FailedVotes >= 3 {
+				if g.FailedVotes > 1 {
 					ge := GameEvent{
 						BaseEvent: BaseEvent{Type: TypeGameUpdate},
 						Game: Game{
