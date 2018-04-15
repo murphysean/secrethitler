@@ -45,7 +45,7 @@ const (
 func NewSecretHitler() *SecretHitler {
 	ret := new(SecretHitler)
 	ret.subscribers = make(map[string]chan<- Event)
-	ec := make(chan Event)
+	ec := make(chan Event, 10)
 	//Make the engine a subscriber
 	ret.subscribers["engine"] = ec
 	go func() {
@@ -57,15 +57,12 @@ func NewSecretHitler() *SecretHitler {
 					return
 				}
 				if nes, err := ret.Engine(e); err == nil {
-					fmt.Println("engine: Produced:", nes)
 					for _, ne := range nes {
 						ctx := context.Background()
 						ctx = context.WithValue(ctx, "playerID", "engine")
 						err = ret.SubmitEvent(ctx, ne)
 						if err != nil {
 							fmt.Println("engine:Submit Error:", err)
-						} else {
-							fmt.Println("engine:Submitted", ne)
 						}
 					}
 				}
