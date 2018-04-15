@@ -253,33 +253,46 @@ func (g Game) Engine(e Event) ([]Event, error) {
 			} else {
 				//If the vote failed, enact a policy if failed votes = 3
 				if g.FailedVotes >= 3 {
-					//Pop the top policy off the draw pile and enact it
-					tp := g.Draw[len(g.Draw)-1]
-					if tp == PolicyLiberal {
-						g.Liberal++
-					} else {
-						g.Facist++
-					}
-					g.Draw = g.Draw[:len(g.Draw)-1]
 					ge := GameEvent{
 						BaseEvent: BaseEvent{Type: TypeGameUpdate},
 						Game: Game{
-							Facist:  g.Facist,
-							Liberal: g.Liberal,
-							Draw:    g.Draw[:len(g.Draw)-1],
-							Discard: g.Discard,
+							FailedVotes:          -1,
+							PreviousPresidentID:  "-",
+							PreviousChancellorID: "-",
 						},
 					}
+					//Pop the top policy off the draw pile and enact it
+					tp := g.Draw[len(g.Draw)-1]
+					if tp == PolicyLiberal {
+						ge.Game.Liberal = g.Liberal + 1
+						ge.Game.PreviousEnactedPolicy = PolicyLiberal
+					} else {
+						ge.Game.Facist = g.Facist + 1
+						ge.Game.PreviousEnactedPolicy = PolicyFacist
+					}
+					ge.Game.Draw = g.Draw[:len(g.Draw)-1]
+					over := false
 					if g.Facist > 5 {
 						ge.Game.State = GameStateFinished
 						ge.Game.WinningParty = PartyFacist
+						over = true
 					}
 					if g.Liberal > 4 {
 						ge.Game.State = GameStateFinished
 						ge.Game.WinningParty = PartyLiberal
+						over = true
 					}
 					ret = append(ret, ge)
+					if !over {
+						ret = append(ret, g.createNextRound()...)
+					}
 				} else {
+					ret = append(ret, GameEvent{
+						BaseEvent: BaseEvent{Type: TypeGameUpdate},
+						Game: Game{
+							FailedVotes: g.FailedVotes + 1,
+						},
+					})
 					//End the round now, start a new one
 					ret = append(ret, g.createNextRound()...)
 				}
