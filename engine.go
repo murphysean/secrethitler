@@ -302,6 +302,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 		//Now if there is only one remaining, play it
 		if len(ge.Game.Round.Policies) == 1 {
 			ge.Game.Round.EnactedPolicy = ge.Game.Round.Policies[0]
+			ge.Game.PreviousEnactedPolicy = ge.Game.Round.EnactedPolicy
 			if ge.Game.Round.EnactedPolicy == PolicyLiberal {
 				ge.Game.Liberal = g.Liberal + 1
 			} else {
@@ -339,10 +340,16 @@ func (g Game) Engine(e Event) ([]Event, error) {
 					ExecutiveAction: ExecutiveActionInvestigate,
 				})
 			case ExecutiveActionPeek:
+				var pp []string
+				if len(g.Draw) > 2 {
+					pp = g.Draw[len(g.Draw)-3:]
+				} else {
+					pp = ge.Game.Draw[len(ge.Game.Draw)-3:]
+				}
 				ret = append(ret, InformationEvent{
 					BaseEvent: BaseEvent{Type: TypeGameInformation},
 					PlayerID:  g.Round.PresidentID,
-					Policies:  g.Draw[len(g.Draw)-3:],
+					Policies:  pp,
 					Token: createToken(g.Secret, Token{
 						PlayerID:  g.Round.PresidentID,
 						EventID:   g.EventID,

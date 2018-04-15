@@ -226,6 +226,11 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 		} else if ne.Game.PreviousChancellorID != "" {
 			g.PreviousChancellorID = ne.Game.PreviousChancellorID
 		}
+		if ne.Game.PreviousEnactedPolicy == "-" {
+			g.PreviousEnactedPolicy = ""
+		} else if ne.Game.PreviousEnactedPolicy != "" {
+			g.PreviousEnactedPolicy = ne.Game.PreviousEnactedPolicy
+		}
 		if ne.Game.SpecialElectionPresidentID == "-" {
 			g.SpecialElectionPresidentID = ""
 		} else if ne.Game.SpecialElectionPresidentID != "" {

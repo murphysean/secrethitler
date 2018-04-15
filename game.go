@@ -189,6 +189,7 @@ type Game struct {
 	NextPresidentID            string   `json:"nextPresidentID,omitempty"`
 	PreviousPresidentID        string   `json:"previousPresidentID,omitempty"`
 	PreviousChancellorID       string   `json:"previousChancellorID,omitempty"`
+	PreviousEnactedPolicy      string   `json:"previousEnactedPolicy"`
 	SpecialElectionRoundID     int      `json:"specialElectionRoundID,omitempty"`
 	SpecialElectionPresidentID string   `json:"specialElectionPresidentID,omitempty"`
 	WinningParty               string   `json:"winningParty,omitempty"`

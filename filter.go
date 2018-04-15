@@ -15,8 +15,13 @@ func (g Game) Filter(ctx context.Context) Game {
 		g.Secret = "masked"
 	}
 	//Filter the draw and dscard pile
-	g.Draw = maskedPolicies(len(g.Draw))
-	g.Discard = maskedPolicies(len(g.Discard))
+	if g.PreviousPresidentID == playerID && g.Facist == 3 && len(g.Players) < 7 && g.PreviousEnactedPolicy == PolicyFacist {
+		g.Draw = maskedPolicies(len(g.Draw), true)
+	} else {
+		g.Draw = maskedPolicies(len(g.Draw), false)
+	}
+
+	g.Discard = maskedPolicies(len(g.Discard), false)
 	//Filter the player roles
 	nps := []Player{}
 	for _, p := range g.Players {
@@ -58,15 +63,15 @@ func (g Game) Filter(ctx context.Context) Game {
 	}
 	//Filter the round policies
 	if me.ID != g.Round.PresidentID && me.ID != g.Round.ChancellorID {
-		g.Round.Policies = maskedPolicies(len(g.Round.Policies))
+		g.Round.Policies = maskedPolicies(len(g.Round.Policies), false)
 	} else if me.ID == g.Round.ChancellorID && len(g.Round.Policies) > 2 {
-		g.Round.Policies = maskedPolicies(len(g.Round.Policies))
+		g.Round.Policies = maskedPolicies(len(g.Round.Policies), false)
 	}
 
 	return g
 }
 
-func maskedPolicies(len int) []string {
+func maskedPolicies(len int, exceptlast3 bool) []string {
 	ret := make([]string, len)
 	for i := 0; i < len; i++ {
 		ret[i] = PolicyMasked
