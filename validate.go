@@ -80,6 +80,9 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		if g.Round.PresidentID != ope.PlayerID {
 			return errors.New("Must be the round president to nominate a chancellor")
 		}
+		if ope.PlayerID == ope.OtherPlayerID {
+			return errors.New("Must nominate another player as chancellor")
+		}
 		if g.PreviousPresidentID == ope.OtherPlayerID {
 			return errors.New("Nominated player was previous president")
 		}
@@ -161,6 +164,9 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		if g.Round.ExecutiveAction != ExecutiveActionInvestigate {
 			return errors.New("The round did not result in an investigate executive action")
 		}
+		if ope.PlayerID == ope.OtherPlayerID {
+			return errors.New("Must investigate another player")
+		}
 		for _, p := range g.Players {
 			if p.ID == ope.OtherPlayerID {
 				if p.InvestigatedBy != "" {
@@ -182,12 +188,8 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		if g.Round.ExecutiveAction != ExecutiveActionSpecialElection {
 			return errors.New("The round did not result in an special election executive action")
 		}
-		for _, p := range g.Players {
-			if p.ID == ope.OtherPlayerID {
-				if p.ExecutedBy != "" {
-					return errors.New("The proposed player has been executed")
-				}
-			}
+		if ope.PlayerID == ope.OtherPlayerID {
+			return errors.New("Must pick another player")
 		}
 	case TypePlayerExecute:
 		ope := e.(PlayerPlayerEvent)
@@ -202,6 +204,9 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		}
 		if g.Round.ExecutiveAction != ExecutiveActionExecute {
 			return errors.New("The round did not result in an execute executive action")
+		}
+		if ope.PlayerID == ope.OtherPlayerID {
+			return errors.New("Must execute another player")
 		}
 		for _, p := range g.Players {
 			if p.ID == ope.OtherPlayerID {
