@@ -248,10 +248,38 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		if ae.PlayerID != pid {
 			return errors.New("PlayerID must match currently authenticated user")
 		}
+		//Token must validate
+		t, err := validateToken(g.Secret, ae.Token)
+		if err != nil {
+			return err
+		}
+		if t.PlayerID != ae.PlayerID {
+			return errors.New("PlayerID must match token")
+		}
+		if t.RoundID != ae.RoundID {
+			return errors.New("RoundID must match token")
+		}
+		if t.PolicyCount != len(ae.Policies) {
+			return errors.New("Number of policies must match those revealed")
+		}
 	case TypeAssertParty:
 		ae := e.(AssertEvent)
 		if ae.PlayerID != pid {
 			return errors.New("PlayerID must match currently authenticated user")
+		}
+		//Token must validate
+		t, err := validateToken(g.Secret, ae.Token)
+		if err != nil {
+			return err
+		}
+		if t.PlayerID != ae.PlayerID {
+			return errors.New("PlayerID must match token")
+		}
+		if t.RoundID != ae.RoundID {
+			return errors.New("RoundID must match token")
+		}
+		if t.OtherPlayerID != ae.OtherPlayerID {
+			return errors.New("OtherPlayerID must match token")
 		}
 	default:
 		if pid != "admin" && pid != "engine" {

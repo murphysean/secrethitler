@@ -329,10 +329,12 @@ func (e ReactEvent) Filter(ctx context.Context) Event { return e }
 
 type AssertEvent struct {
 	BaseEvent
-	PlayerID string   `json:"playerID"`
-	Token    string   `json:"token"`
-	Policies []string `json:"policies,omitempty"`
-	Party    string   `json:"party,omitempty"`
+	PlayerID      string   `json:"playerID"`
+	RoundID       int      `json:"roundID"`
+	Token         string   `json:"token"`
+	Policies      []string `json:"policies,omitempty"`
+	OtherPlayerID string   `json:"otherPlayerID"`
+	Party         string   `json:"party,omitempty"`
 }
 
 func (e AssertEvent) Filter(ctx context.Context) Event {
