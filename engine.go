@@ -181,6 +181,14 @@ func (g Game) Engine(e Event) ([]Event, error) {
 			ret = append(ret, g.createNextRound()...)
 		}
 	case TypePlayerNominate:
+		ret = append(ret, GameEvent{
+			BaseEvent: BaseEvent{Type: TypeGameUpdate},
+			Game: Game{
+				Round: Round{
+					State: RoundStateVoting,
+				},
+			},
+		})
 		ret = append(ret, RequestEvent{
 			BaseEvent: BaseEvent{Type: TypeRequestVote},
 		})
