@@ -405,6 +405,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 			ret = append(ret, RequestEvent{
 				BaseEvent: BaseEvent{Type: TypeRequestLegislate},
 				PlayerID:  g.Round.ChancellorID,
+				RoundID:   g.Round.ID,
 				Policies:  ge.Game.Round.Policies,
 				Token: createToken(g.Secret, Token{
 					EventID:     g.EventID,
@@ -427,6 +428,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 		ret = append(ret, InformationEvent{
 			BaseEvent: BaseEvent{Type: TypeGameInformation},
 			PlayerID:  g.Round.PresidentID,
+			RoundID:   g.Round.ID,
 			Party:     party,
 			Token: createToken(g.Secret, Token{
 				PlayerID:      g.Round.PresidentID,
