@@ -371,6 +371,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 				ret = append(ret, InformationEvent{
 					BaseEvent: BaseEvent{Type: TypeGameInformation},
 					PlayerID:  g.Round.PresidentID,
+					RoundID:   g.Round.ID,
 					Policies:  pp,
 					Token: createToken(g.Secret, Token{
 						PlayerID:  g.Round.PresidentID,
