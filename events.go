@@ -296,6 +296,7 @@ func (e InformationEvent) Filter(ctx context.Context) Event {
 type RequestEvent struct {
 	BaseEvent
 	PlayerID        string   `json:"playerID"`
+	RoundID         int      `json:"roundID"`
 	PresidentID     string   `json:"presidentID,omitempty"`
 	ChancellorID    string   `json:"chancellorID,omitempty"`
 	ExecutiveAction string   `json:"executiveAction,omitempty"`
