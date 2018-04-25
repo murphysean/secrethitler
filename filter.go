@@ -38,7 +38,7 @@ func (g Game) Filter(ctx context.Context) Game {
 			np.Party = p.Party
 			np.Role = p.Role
 		}
-		if me.ID == p.InvestigatedBy {
+		if p.InvestigatedBy != "" && me.ID == p.InvestigatedBy {
 			np.Party = p.Party
 		}
 		if me.Role == RoleFacist || (len(g.Players) < 7 && me.Role == RoleHitler) {
