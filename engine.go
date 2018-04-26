@@ -84,18 +84,18 @@ func (gs Game) createNextRound() []Event {
 	}}
 }
 
-func (g Game) executiveAction() string {
-	switch g.Facist {
+func executiveAction(numPlayers, numFacistPolicies int) string {
+	switch numFacistPolicies {
 	case 1:
-		if len(g.Players) > 8 {
+		if numPlayers > 8 {
 			return ExecutiveActionInvestigate
 		}
 	case 2:
-		if len(g.Players) > 6 {
+		if numPlayers > 6 {
 			return ExecutiveActionInvestigate
 		}
 	case 3:
-		if len(g.Players) > 6 {
+		if numPlayers > 6 {
 			return ExecutiveActionSpecialElection
 		} else {
 			return ExecutiveActionPeek
@@ -330,7 +330,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 			} else {
 				ge.Game.Facist = g.Facist + 1
 				//If a card was played on a facist, trigger an executive action, or ea request
-				ge.Game.Round.ExecutiveAction = ge.Game.executiveAction()
+				ge.Game.Round.ExecutiveAction = executiveAction(len(g.Players), ge.Game.Facist)
 			}
 			if ge.Game.Facist > 5 {
 				ge.Game.State = GameStateFinished
