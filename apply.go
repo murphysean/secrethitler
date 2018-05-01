@@ -11,38 +11,6 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 
 	//Assign the event id to the event
 	switch e.GetType() {
-	//REQUEST EVENTS
-	case TypeRequestAcknowledge:
-		ne := e.(RequestEvent)
-		ne.ID = g.EventID
-		ne.Moment = time.Now()
-		e = ne
-		g.State = GameStateStarted
-	case TypeRequestVote:
-		ne := e.(RequestEvent)
-		ne.ID = g.EventID
-		ne.Moment = time.Now()
-		e = ne
-		//Set the round state to voting
-		g.Round.State = RoundStateVoting
-	case TypeRequestNominate:
-		ne := e.(RequestEvent)
-		ne.ID = g.EventID
-		ne.Moment = time.Now()
-		e = ne
-		g.Round.State = RoundStateNominating
-	case TypeRequestLegislate:
-		ne := e.(RequestEvent)
-		ne.ID = g.EventID
-		ne.Moment = time.Now()
-		e = ne
-		g.Round.State = RoundStateLegislating
-	case TypeRequestExecutiveAction:
-		ne := e.(RequestEvent)
-		ne.ID = g.EventID
-		ne.Moment = time.Now()
-		e = ne
-		g.Round.State = RoundStateExecutiveAction
 	//PLAYER EVENTS
 	case TypePlayerJoin:
 		ne := e.(PlayerEvent)
@@ -129,6 +97,14 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 				g.Players[i].LastAction = ne.Moment
 			}
 		}
+	//ASSERT EVENTS
+	case TypeAssertPolicies:
+		fallthrough
+	case TypeAssertParty:
+		ne := e.(MessageEvent)
+		ne.ID = g.EventID
+		ne.Moment = time.Now()
+		e = ne
 	//REACT EVENTS
 	case TypeReactPlayer:
 		fallthrough
@@ -144,6 +120,7 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 				g.Players[i].LastAction = ne.Moment
 			}
 		}
+	//GUESS EVENTS
 	case TypeGuess:
 		ne := e.(GuessEvent)
 		ne.ID = g.EventID
@@ -154,6 +131,38 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 				g.Players[i].LastAction = ne.Moment
 			}
 		}
+	//REQUEST EVENTS
+	case TypeRequestAcknowledge:
+		ne := e.(RequestEvent)
+		ne.ID = g.EventID
+		ne.Moment = time.Now()
+		e = ne
+		g.State = GameStateStarted
+	case TypeRequestVote:
+		ne := e.(RequestEvent)
+		ne.ID = g.EventID
+		ne.Moment = time.Now()
+		e = ne
+		//Set the round state to voting
+		g.Round.State = RoundStateVoting
+	case TypeRequestNominate:
+		ne := e.(RequestEvent)
+		ne.ID = g.EventID
+		ne.Moment = time.Now()
+		e = ne
+		g.Round.State = RoundStateNominating
+	case TypeRequestLegislate:
+		ne := e.(RequestEvent)
+		ne.ID = g.EventID
+		ne.Moment = time.Now()
+		e = ne
+		g.Round.State = RoundStateLegislating
+	case TypeRequestExecutiveAction:
+		ne := e.(RequestEvent)
+		ne.ID = g.EventID
+		ne.Moment = time.Now()
+		e = ne
+		g.Round.State = RoundStateExecutiveAction
 	//GAME EVENTS
 	case TypeGameVoteResults:
 		ne := e.(VoteResultEvent)
