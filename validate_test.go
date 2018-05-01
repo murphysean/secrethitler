@@ -37,7 +37,7 @@ func TestValidateReact(t *testing.T) {
 		t.Fatal("No last reaction should allow reaction", err)
 	}
 
-	g.Players[0].LastReaction = now.Add(time.Millisecond * -500)
+	g.Players[0].LastAction = now.Add(time.Millisecond * -500)
 	err = g.Validate(ctx, e)
 	if err == nil {
 		t.Fatal("Should throw error when throttle limit exceeded")

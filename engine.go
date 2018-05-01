@@ -213,6 +213,12 @@ func (g Game) Engine(e Event) ([]Event, error) {
 		}
 		if allIn {
 			succeeded := ((float64(c) / float64(len(g.Round.Votes))) * 100) > 50.0
+			//Send out an event
+			ret = append(ret, VoteResultEvent{
+				BaseEvent: BaseEvent{Type: TypeGameVoteResults},
+				Succeeded: succeeded,
+				Votes:     g.Round.Votes,
+			})
 			if succeeded {
 				//If secret hitler is elected chancellor with 3 facist polices down, facists win
 				if g.Facist > 2 {

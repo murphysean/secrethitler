@@ -73,13 +73,6 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 				break
 			}
 		}
-	case TypePlayerVote:
-		ne := e.(PlayerVoteEvent)
-		ne.ID = g.EventID
-		ne.Moment = time.Now()
-		e = ne
-		//Add the given vote to the rounds vote array
-		g.Round.Votes = append(g.Round.Votes, Vote{ne.PlayerID, ne.Vote})
 	case TypePlayerNominate:
 		ne := e.(PlayerPlayerEvent)
 		ne.ID = g.EventID
@@ -87,6 +80,13 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 		e = ne
 		//Add the chancelor to the round object
 		g.Round.ChancellorID = ne.OtherPlayerID
+	case TypePlayerVote:
+		ne := e.(PlayerVoteEvent)
+		ne.ID = g.EventID
+		ne.Moment = time.Now()
+		e = ne
+		//Add the given vote to the rounds vote array
+		g.Round.Votes = append(g.Round.Votes, Vote{ne.PlayerID, ne.Vote})
 	case TypePlayerLegislate:
 		ne := e.(PlayerLegislateEvent)
 		ne.ID = g.EventID
@@ -155,6 +155,16 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 			}
 		}
 	//GAME EVENTS
+	case TypeGameVoteResults:
+		ne := e.(VoteResultEvent)
+		ne.ID = g.EventID
+		ne.Moment = time.Now()
+		e = ne
+	case TypeGameInformation:
+		ne := e.(InformationEvent)
+		ne.ID = g.EventID
+		ne.Moment = time.Now()
+		e = ne
 	case TypeGameUpdate:
 		ne := e.(GameEvent)
 		ne.ID = g.EventID

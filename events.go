@@ -34,6 +34,7 @@ const (
 	TypeRequestLegislate       = "request.legislate"
 	TypeRequestExecutiveAction = "request.executive_action"
 
+	TypeGameVoteResults = "game.vote_results"
 	TypeGameInformation = "game.information"
 	TypeGameUpdate      = "game.update"
 )
@@ -255,6 +256,15 @@ type MessageEvent struct {
 }
 
 func (e MessageEvent) Filter(ctx context.Context) Event { return e }
+
+type VoteResultEvent struct {
+	BaseEvent
+	RoundID   int
+	Succeeded bool
+	Votes     []Vote
+}
+
+func (e VoteResultEvent) Filter(ctx context.Context) Event { return e }
 
 type GameEvent struct {
 	BaseEvent
