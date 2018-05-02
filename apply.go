@@ -101,7 +101,7 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 	case TypeAssertPolicies:
 		fallthrough
 	case TypeAssertParty:
-		ne := e.(MessageEvent)
+		ne := e.(AssertEvent)
 		ne.ID = g.EventID
 		ne.Moment = time.Now()
 		e = ne
