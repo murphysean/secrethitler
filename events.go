@@ -114,36 +114,10 @@ func UnmarshalEvent(b []byte) (Event, error) {
 			e.Moment = time.Now()
 		}
 		return e, nil
-	case TypeRequestAcknowledge:
+	case TypeAssertPolicies:
 		fallthrough
-	case TypeRequestVote:
-		fallthrough
-	case TypeRequestNominate:
-		fallthrough
-	case TypeRequestLegislate:
-		fallthrough
-	case TypeRequestExecutiveAction:
-		e := RequestEvent{}
-		err = json.Unmarshal(b, &e)
-		if err != nil {
-			return bt, err
-		}
-		if e.Moment.IsZero() {
-			e.Moment = time.Now()
-		}
-		return e, nil
-	case TypeGameInformation:
-		e := InformationEvent{}
-		err = json.Unmarshal(b, &e)
-		if err != nil {
-			return bt, err
-		}
-		if e.Moment.IsZero() {
-			e.Moment = time.Now()
-		}
-		return e, nil
-	case TypeGameUpdate:
-		e := GameEvent{}
+	case TypeAssertParty:
+		e := AssertEvent{}
 		err = json.Unmarshal(b, &e)
 		if err != nil {
 			return bt, err
@@ -166,10 +140,56 @@ func UnmarshalEvent(b []byte) (Event, error) {
 			e.Moment = time.Now()
 		}
 		return e, nil
-	case TypeAssertParty:
+	case TypeGuess:
+		e := GuessEvent{}
+		err = json.Unmarshal(b, &e)
+		if err != nil {
+			return bt, err
+		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
+		}
+		return e, nil
+	case TypeRequestAcknowledge:
 		fallthrough
-	case TypeAssertPolicies:
-		e := AssertEvent{}
+	case TypeRequestVote:
+		fallthrough
+	case TypeRequestNominate:
+		fallthrough
+	case TypeRequestLegislate:
+		fallthrough
+	case TypeRequestExecutiveAction:
+		e := RequestEvent{}
+		err = json.Unmarshal(b, &e)
+		if err != nil {
+			return bt, err
+		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
+		}
+		return e, nil
+	case TypeGameVoteResults:
+		e := VoteResultEvent{}
+		err = json.Unmarshal(b, &e)
+		if err != nil {
+			return bt, err
+		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
+		}
+		return e, nil
+	case TypeGameInformation:
+		e := InformationEvent{}
+		err = json.Unmarshal(b, &e)
+		if err != nil {
+			return bt, err
+		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
+		}
+		return e, nil
+	case TypeGameUpdate:
+		e := GameEvent{}
 		err = json.Unmarshal(b, &e)
 		if err != nil {
 			return bt, err
@@ -259,9 +279,9 @@ func (e MessageEvent) Filter(ctx context.Context) Event { return e }
 
 type VoteResultEvent struct {
 	BaseEvent
-	RoundID   int
-	Succeeded bool
-	Votes     []Vote
+	RoundID   int    `json:"roundID"`
+	Succeeded bool   `json:"succeeded"`
+	Votes     []Vote `json:"votes"`
 }
 
 func (e VoteResultEvent) Filter(ctx context.Context) Event { return e }
@@ -312,6 +332,7 @@ type RequestEvent struct {
 	ChancellorID    string   `json:"chancellorID,omitempty"`
 	ExecutiveAction string   `json:"executiveAction,omitempty"`
 	Policies        []string `json:"policies,omitempty"`
+	Veto            bool     `json:"veto,omitempty"`
 	Token           string   `json:"token,omitempty"`
 }
 
@@ -344,8 +365,9 @@ type AssertEvent struct {
 	PlayerID      string   `json:"playerID"`
 	RoundID       int      `json:"roundID"`
 	Token         string   `json:"token"`
+	PolicySource  string   `json:"policySource,omitempty"`
 	Policies      []string `json:"policies,omitempty"`
-	OtherPlayerID string   `json:"otherPlayerID"`
+	OtherPlayerID string   `json:"otherPlayerID,omitempty"`
 	Party         string   `json:"party,omitempty"`
 }
 

@@ -59,3 +59,45 @@ func TestGameStart(t *testing.T) {
 		t.Fatal("No Game update event")
 	}
 }
+
+func TestVeto(t *testing.T) {
+	g := Game{
+		ID:     "1",
+		Secret: "secret",
+		State:  GameStateStarted,
+		Players: []Player{
+			Player{ID: "1", Party: PartyLiberal, Role: RoleLiberal},
+			Player{ID: "2", Party: PartyLiberal, Role: RoleLiberal},
+			Player{ID: "3", Party: PartyLiberal, Role: RoleLiberal},
+			Player{ID: "4", Party: PartyFacist, Role: RoleFacist},
+			Player{ID: "5", Party: PartyFacist, Role: RoleHitler},
+		},
+		PreviousPresidentID:  "4",
+		PreviousChancellorID: "5",
+		NextPresidentID:      "2",
+		ElectionTracker:      2,
+		Liberal:              4,
+		Facist:               5,
+		Draw:                 []string{"draw", "draw", "draw"},
+		Discard:              []string{"discard"},
+		Round: Round{
+			ID:           10,
+			PresidentID:  "1",
+			ChancellorID: "2",
+			Policies:     []string{PolicyFacist},
+			State:        RoundStateLegislating,
+		},
+	}
+	e := PlayerLegislateEvent{
+		BaseEvent: BaseEvent{Type: TypePlayerLegislate},
+		PlayerID:  "1",
+		Veto:      true,
+	}
+	events, err := g.Engine(e)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range events {
+		t.Log(e)
+	}
+}

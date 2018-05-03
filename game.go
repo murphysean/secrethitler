@@ -11,6 +11,10 @@ import (
 )
 
 const (
+	PlayerIDEngine = "engine"
+	PlayerIDAdmin  = "admin"
+	PlayerIDAll    = "all"
+
 	PolicyFacist  = "facist"
 	PolicyLiberal = "liberal"
 	PolicyMasked  = "masked"
@@ -59,7 +63,7 @@ func NewSecretHitler() *SecretHitler {
 				if nes, err := ret.Engine(e); err == nil {
 					for _, ne := range nes {
 						ctx := context.Background()
-						ctx = context.WithValue(ctx, "playerID", "engine")
+						ctx = context.WithValue(ctx, "playerID", PlayerIDEngine)
 						err = ret.SubmitEvent(ctx, ne)
 						if err != nil {
 							fmt.Println("engine:Submit Error:", err)
@@ -175,7 +179,7 @@ type Token struct {
 }
 
 type Game struct {
-	ID                         string   `json:"id"`
+	ID                         string   `json:"id,omitempty"`
 	Secret                     string   `json:"secret,omitempty"`
 	EventID                    int      `json:"eventID,omitempty"`
 	State                      string   `json:"state,omitempty"`
@@ -183,13 +187,13 @@ type Game struct {
 	Discard                    []string `json:"discard,omitempty"`
 	Liberal                    int      `json:"liberal,omitempty"`
 	Facist                     int      `json:"facist,omitempty"`
-	FailedVotes                int      `json:"failedVotes,omitempty"`
+	ElectionTracker            int      `json:"electionTracker,omitempty"`
 	Players                    []Player `json:"players,omitempty"`
 	Round                      Round    `json:"round,omitempty"`
 	NextPresidentID            string   `json:"nextPresidentID,omitempty"`
 	PreviousPresidentID        string   `json:"previousPresidentID,omitempty"`
 	PreviousChancellorID       string   `json:"previousChancellorID,omitempty"`
-	PreviousEnactedPolicy      string   `json:"previousEnactedPolicy"`
+	PreviousEnactedPolicy      string   `json:"previousEnactedPolicy,omitempty"`
 	SpecialElectionRoundID     int      `json:"specialElectionRoundID,omitempty"`
 	SpecialElectionPresidentID string   `json:"specialElectionPresidentID,omitempty"`
 	WinningParty               string   `json:"winningParty,omitempty"`

@@ -75,7 +75,7 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 			return errors.New("PlayerID must match currently authenticated user")
 		}
 		if g.Round.State != RoundStateNominating {
-			return errors.New("Players can only vote while the round is in the nominating state")
+			return errors.New("Players can only nominate while the round is in the nominating state")
 		}
 		if g.Round.PresidentID != ope.PlayerID {
 			return errors.New("Must be the round president to nominate a chancellor")
@@ -83,11 +83,20 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		if ope.PlayerID == ope.OtherPlayerID {
 			return errors.New("Must nominate another player as chancellor")
 		}
-		if g.PreviousPresidentID == ope.OtherPlayerID {
-			return errors.New("Nominated player was previous president")
-		}
 		if g.PreviousChancellorID == ope.OtherPlayerID {
 			return errors.New("Nominated player was previous chancellor")
+		}
+		//If there are only 5 alive players
+		playersLeft := 0
+		for _, p := range g.Players {
+			if p.ExecutedBy == "" {
+				playersLeft++
+			}
+		}
+		if playersLeft > 5 {
+			if g.PreviousPresidentID == ope.OtherPlayerID {
+				return errors.New("Nominated player was previous president")
+			}
 		}
 		for _, p := range g.Players {
 			if p.ID == ope.OtherPlayerID {
@@ -136,19 +145,24 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		} else if len(g.Round.Policies) == 2 {
 			if g.Round.ChancellorID != ple.PlayerID {
 				return errors.New("Only the chancellor can discard the second card in a round")
-				return errors.New("")
 			}
-		} else {
-			return errors.New("No cards available to discard")
-		}
-		found := false
-		for _, c := range g.Round.Policies {
-			if c == ple.Discard {
-				found = true
+		} else if len(g.Round.Policies) == 1 {
+			if g.Round.PresidentID != ple.PlayerID {
+				return errors.New("Only the president can discard the last card with a veto")
 			}
 		}
-		if !found {
-			return errors.New("Discarded policy must be one of the available options")
+		if g.Facist < 5 && ple.Veto {
+			return errors.New("Can only veto on the 5th facist policy")
+		} else if !ple.Veto {
+			found := false
+			for _, c := range g.Round.Policies {
+				if c == ple.Discard {
+					found = true
+				}
+			}
+			if !found {
+				return errors.New("Discarded policy must be one of the available options")
+			}
 		}
 	case TypePlayerInvestigate:
 		ope := e.(PlayerPlayerEvent)

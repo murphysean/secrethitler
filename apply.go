@@ -210,10 +210,10 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 		} else if len(ne.Game.Discard) > 0 {
 			g.Discard = ne.Game.Discard
 		}
-		if ne.Game.FailedVotes > 0 {
-			g.FailedVotes = ne.Game.FailedVotes
-		} else if ne.Game.FailedVotes == -1 {
-			g.FailedVotes = 0
+		if ne.Game.ElectionTracker > 0 {
+			g.ElectionTracker = ne.Game.ElectionTracker
+		} else if ne.Game.ElectionTracker == -1 {
+			g.ElectionTracker = 0
 		}
 		if ne.Game.Liberal > 0 {
 			g.Liberal = ne.Game.Liberal
@@ -298,7 +298,7 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 		}
 		if len(ne.Game.Round.Policies) == 1 && ne.Game.Round.Policies[0] == "-" {
 			g.Round.Policies = []string{}
-		} else if len(ne.Game.Round.Policies) > 1 {
+		} else if len(ne.Game.Round.Policies) > 0 {
 			g.Round.Policies = ne.Game.Round.Policies
 		}
 	}
