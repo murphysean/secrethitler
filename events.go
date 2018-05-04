@@ -255,9 +255,9 @@ func (e PlayerVoteEvent) Filter(ctx context.Context) Event {
 
 type PlayerLegislateEvent struct {
 	BaseEvent
-	PlayerID string
-	Discard  string
-	Veto     bool
+	PlayerID string `json:"playerID"`
+	Discard  string `json:"discard"`
+	Veto     bool   `json:"veto"`
 }
 
 func (e PlayerLegislateEvent) Filter(ctx context.Context) Event {
