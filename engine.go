@@ -383,7 +383,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 			}
 			//Shuffle if there are < 3 policies in the draw pile
 			if len(g.Draw) < 3 {
-				ge.Game.Draw = append(g.Draw, g.Discard...)
+				ge.Game.Draw = append(g.Draw, ge.Game.Discard...)
 				ge.Game.Discard = []string{"-"}
 				rand.Shuffle(len(ge.Game.Draw), func(i, j int) {
 					ge.Game.Draw[i], ge.Game.Draw[j] = ge.Game.Draw[j], ge.Game.Draw[i]
