@@ -243,13 +243,13 @@ func (g Game) Engine(e Event) ([]Event, error) {
 				}
 				//Start legislating
 				newdraw := g.Draw[:len(g.Draw)-3]
-				if len(draw) == 0 {
-					draw = []string{"-"}
+				if len(newdraw) == 0 {
+					newdraw = []string{"-"}
 				}
 				ret = append(ret, GameEvent{
 					BaseEvent: BaseEvent{Type: TypeGameUpdate},
 					Game: Game{
-						Draw:                 draw,
+						Draw:                 newdraw,
 						Discard:              g.Discard,
 						PreviousPresidentID:  g.Round.PresidentID,
 						PreviousChancellorID: g.Round.ChancellorID,
