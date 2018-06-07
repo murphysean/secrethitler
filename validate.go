@@ -9,7 +9,7 @@ import (
 //Validate ensures that an event is consistent with the current state and then
 //sends it to the event log.
 func (g Game) Validate(ctx context.Context, e Event) error {
-	pid := ctx.Value("playerID").(string)
+	pid, _ := ctx.Value("playerID").(string)
 	//Players must all be ready for game to start
 	switch e.GetType() {
 	case TypePlayerJoin:
@@ -51,7 +51,7 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		if pae.Player.ID != pid {
 			return errors.New("PlayerID must match currently authenticated user")
 		}
-		if g.State != "init" {
+		if g.State != GameStateInit {
 			return errors.New("Players can only ack while the game is in the init state")
 		}
 		for _, p := range g.Players {
@@ -88,21 +88,24 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		}
 		//If there are only 5 alive players
 		playersLeft := 0
+		found := false
 		for _, p := range g.Players {
 			if p.ExecutedBy == "" {
 				playersLeft++
 			}
-		}
-		if playersLeft > 5 {
-			if g.PreviousPresidentID == ope.OtherPlayerID {
-				return errors.New("Nominated player was previous president")
-			}
-		}
-		for _, p := range g.Players {
 			if p.ID == ope.OtherPlayerID {
 				if p.ExecutedBy != "" {
 					return errors.New("The proposed player has been executed")
 				}
+				found = true
+			}
+		}
+		if !found {
+			return errors.New("Other player invalid")
+		}
+		if playersLeft > 5 {
+			if g.PreviousPresidentID == ope.OtherPlayerID {
+				return errors.New("Nominated player was previous president")
 			}
 		}
 	case TypePlayerVote:
@@ -181,11 +184,11 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		if ope.PlayerID == ope.OtherPlayerID {
 			return errors.New("Must investigate another player")
 		}
-		for _, p := range g.Players {
-			if p.ID == ope.OtherPlayerID {
-				if p.InvestigatedBy != "" {
-					return errors.New("This player has been previously investigated")
-				}
+		if op, err := g.GetPlayerByID(ope.OtherPlayerID); err != nil {
+			return errors.New("Other player invalid")
+		} else {
+			if op.InvestigatedBy != "" {
+				return errors.New("This player has been previously investigated")
 			}
 		}
 	case TypePlayerSpecialElection:
@@ -205,6 +208,9 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		if ope.PlayerID == ope.OtherPlayerID {
 			return errors.New("Must pick another player")
 		}
+		if _, err := g.GetPlayerByID(ope.OtherPlayerID); err != nil {
+			return errors.New("Other player invalid")
+		}
 	case TypePlayerExecute:
 		ope := e.(PlayerPlayerEvent)
 		if ope.PlayerID != pid {
@@ -222,11 +228,11 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		if ope.PlayerID == ope.OtherPlayerID {
 			return errors.New("Must execute another player")
 		}
-		for _, p := range g.Players {
-			if p.ID == ope.OtherPlayerID {
-				if p.ExecutedBy != "" {
-					return errors.New("This player has been previously executed")
-				}
+		if op, err := g.GetPlayerByID(ope.OtherPlayerID); err != nil {
+			return errors.New("Other player invalid")
+		} else {
+			if op.ExecutedBy != "" {
+				return errors.New("This player has been previously executed")
 			}
 		}
 	case TypePlayerMessage:
@@ -238,8 +244,10 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 			return errors.New("Throttle limit reached on messages")
 		}
 	case TypeReactPlayer:
+		//TODO Other player must exist
 		fallthrough
 	case TypeReactEventID:
+		//TODO React event id must be valid
 		fallthrough
 	case TypeReactStatus:
 		re := e.(ReactEvent)
@@ -262,7 +270,7 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		if ae.PlayerID != pid {
 			return errors.New("PlayerID must match currently authenticated user")
 		}
-		if g.Round.State == RoundStateLegislating {
+		if g.Round.State == RoundStateLegislating && ae.PolicySource == RoundStateLegislating {
 			return errors.New("Can't reveal information during legislation")
 		}
 		//Token must validate
@@ -275,6 +283,9 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		}
 		if t.RoundID != ae.RoundID {
 			return errors.New("RoundID must match token")
+		}
+		if t.Assertion != ae.PolicySource {
+			return errors.New("Policy Source must match token")
 		}
 		if t.PolicyCount != len(ae.Policies) {
 			return errors.New("Number of policies must match those revealed")

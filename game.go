@@ -44,6 +44,10 @@ const (
 	ExecutiveActionPeek            = "peek"
 	ExecutiveActionSpecialElection = "special_election"
 	ExecutiveActionExecute         = "execute"
+
+	ConditionHitlerChancellor = "hitler_chancellor"
+	ConditionHitlerExecuted   = "hitler_executed"
+	ConditionPoliciesEnacted  = "policies_enacted"
 )
 
 func NewSecretHitler() *SecretHitler {
@@ -53,12 +57,13 @@ func NewSecretHitler() *SecretHitler {
 	//Make the engine a subscriber
 	ret.subscribers["engine"] = ec
 	go func() {
+	engineloop:
 		for {
 			select {
 			case e := <-ec:
 				if e == nil {
 					fmt.Println("Exiting game engine loop via nil read")
-					return
+					break engineloop
 				}
 				if nes, err := ret.Engine(e); err == nil {
 					for _, ne := range nes {
@@ -70,15 +75,15 @@ func NewSecretHitler() *SecretHitler {
 						}
 					}
 				}
-				//If the game is over, then return
+				//If the game is over, shut down the game engine and clean it up as a subscriber
 				if ret.Game.State == GameStateFinished {
 					ret.m.Lock()
-					for k, v := range ret.subscribers {
-						delete(ret.subscribers, k)
-						close(v)
+					if ret.subscribers["engine"] != nil {
+						close(ec)
 					}
+					delete(ret.subscribers, "engine")
 					ret.m.Unlock()
-					break
+					break engineloop
 				}
 			}
 		}
@@ -170,18 +175,18 @@ func ReadEventLog(r io.Reader, c chan<- Event) error {
 }
 
 type Token struct {
-	EventID       int    `json:"eventID"`
-	PlayerID      string `json:"playerID"`
+	EventID       int    `json:"eventId"`
+	PlayerID      string `json:"playerId"`
 	Assertion     string `json:"assertion"`
-	RoundID       int    `json:"roundID"`
-	OtherPlayerID string `json:"otherPlayerID,omitempty"`
+	RoundID       int    `json:"roundId"`
+	OtherPlayerID string `json:"otherPlayerId,omitempty"`
 	PolicyCount   int    `json:"policyCount,omitempty"`
 }
 
 type Game struct {
 	ID                         string   `json:"id,omitempty"`
 	Secret                     string   `json:"secret,omitempty"`
-	EventID                    int      `json:"eventID,omitempty"`
+	EventID                    int      `json:"eventId,omitempty"`
 	State                      string   `json:"state,omitempty"`
 	Draw                       []string `json:"draw,omitempty"`
 	Discard                    []string `json:"discard,omitempty"`
@@ -190,12 +195,12 @@ type Game struct {
 	ElectionTracker            int      `json:"electionTracker,omitempty"`
 	Players                    []Player `json:"players,omitempty"`
 	Round                      Round    `json:"round,omitempty"`
-	NextPresidentID            string   `json:"nextPresidentID,omitempty"`
-	PreviousPresidentID        string   `json:"previousPresidentID,omitempty"`
-	PreviousChancellorID       string   `json:"previousChancellorID,omitempty"`
+	NextPresidentID            string   `json:"nextPresidentId,omitempty"`
+	PreviousPresidentID        string   `json:"previousPresidentId,omitempty"`
+	PreviousChancellorID       string   `json:"previousChancellorId,omitempty"`
 	PreviousEnactedPolicy      string   `json:"previousEnactedPolicy,omitempty"`
-	SpecialElectionRoundID     int      `json:"specialElectionRoundID,omitempty"`
-	SpecialElectionPresidentID string   `json:"specialElectionPresidentID,omitempty"`
+	SpecialElectionRoundID     int      `json:"specialElectionRoundId,omitempty"`
+	SpecialElectionPresidentID string   `json:"specialElectionPresidentId,omitempty"`
 	WinningParty               string   `json:"winningParty,omitempty"`
 }
 
@@ -222,8 +227,8 @@ type Player struct {
 
 type Round struct {
 	ID              int      `json:"id,omitempty"`
-	PresidentID     string   `json:"presidentID,omitempty"`
-	ChancellorID    string   `json:"chancellorID,omitempty"`
+	PresidentID     string   `json:"presidentId,omitempty"`
+	ChancellorID    string   `json:"chancellorId,omitempty"`
 	State           string   `json:"state,omitempty"`
 	Votes           []Vote   `json:"votes,omitempty"`
 	Policies        []string `json:"policies,omitempty"`
@@ -232,6 +237,6 @@ type Round struct {
 }
 
 type Vote struct {
-	PlayerID string `json:"playerID,omitempty"`
+	PlayerID string `json:"playerId,omitempty"`
 	Vote     bool   `json:"vote,omitempty"`
 }

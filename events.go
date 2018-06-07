@@ -37,6 +37,7 @@ const (
 	TypeGameVoteResults = "game.vote_results"
 	TypeGameInformation = "game.information"
 	TypeGameUpdate      = "game.update"
+	TypeGameFinished    = "game.finished"
 )
 
 type Event interface {
@@ -188,6 +189,16 @@ func UnmarshalEvent(b []byte) (Event, error) {
 			e.Moment = time.Now()
 		}
 		return e, nil
+	case TypeGameFinished:
+		e := FinishedEvent{}
+		err = json.Unmarshal(b, &e)
+		if err != nil {
+			return bt, err
+		}
+		if e.Moment.IsZero() {
+			e.Moment = time.Now()
+		}
+		return e, nil
 	case TypeGameUpdate:
 		e := GameEvent{}
 		err = json.Unmarshal(b, &e)
@@ -219,7 +230,7 @@ type PlayerEvent struct {
 }
 
 func (e PlayerEvent) Filter(ctx context.Context) Event {
-	pid := ctx.Value("playerID").(string)
+	pid, _ := ctx.Value("playerID").(string)
 	if pid != "admin" && pid != "engine" && pid != e.Player.ID {
 		if e.Player.Party != "" {
 			e.Player.Party = PartyMasked
@@ -233,20 +244,20 @@ func (e PlayerEvent) Filter(ctx context.Context) Event {
 
 type PlayerPlayerEvent struct {
 	BaseEvent
-	PlayerID      string `json:"playerID"`
-	OtherPlayerID string `json:"otherPlayerID"`
+	PlayerID      string `json:"playerId"`
+	OtherPlayerID string `json:"otherPlayerId"`
 }
 
 func (e PlayerPlayerEvent) Filter(ctx context.Context) Event { return e }
 
 type PlayerVoteEvent struct {
 	BaseEvent
-	PlayerID string `json:"playerID"`
+	PlayerID string `json:"playerId"`
 	Vote     bool   `json:"vote"`
 }
 
 func (e PlayerVoteEvent) Filter(ctx context.Context) Event {
-	pid := ctx.Value("playerID").(string)
+	pid, _ := ctx.Value("playerId").(string)
 	if pid != "admin" && pid != "engine" && pid != e.PlayerID {
 		e.Vote = false
 	}
@@ -255,13 +266,13 @@ func (e PlayerVoteEvent) Filter(ctx context.Context) Event {
 
 type PlayerLegislateEvent struct {
 	BaseEvent
-	PlayerID string `json:"playerID"`
+	PlayerID string `json:"playerId"`
 	Discard  string `json:"discard"`
 	Veto     bool   `json:"veto"`
 }
 
 func (e PlayerLegislateEvent) Filter(ctx context.Context) Event {
-	pid := ctx.Value("playerID").(string)
+	pid, _ := ctx.Value("playerId").(string)
 	if pid != "admin" && pid != "engine" && pid != e.PlayerID {
 		e.Discard = PolicyMasked
 		e.Veto = false
@@ -271,7 +282,7 @@ func (e PlayerLegislateEvent) Filter(ctx context.Context) Event {
 
 type MessageEvent struct {
 	BaseEvent
-	PlayerID string `json:"playerID"`
+	PlayerID string `json:"playerId"`
 	Message  string `json:"message"`
 }
 
@@ -279,7 +290,7 @@ func (e MessageEvent) Filter(ctx context.Context) Event { return e }
 
 type VoteResultEvent struct {
 	BaseEvent
-	RoundID   int    `json:"roundID"`
+	RoundID   int    `json:"roundId"`
 	Succeeded bool   `json:"succeeded"`
 	Votes     []Vote `json:"votes"`
 }
@@ -292,7 +303,7 @@ type GameEvent struct {
 }
 
 func (e GameEvent) Filter(ctx context.Context) Event {
-	pid := ctx.Value("playerID").(string)
+	pid, _ := ctx.Value("playerID").(string)
 	if pid != "admin" && pid != "engine" {
 		e.Game = e.Game.Filter(ctx)
 	}
@@ -301,16 +312,16 @@ func (e GameEvent) Filter(ctx context.Context) Event {
 
 type InformationEvent struct {
 	BaseEvent
-	PlayerID      string   `json:"playerID"`
-	RoundID       int      `json:"roundID"`
-	OtherPlayerID string   `json:"otherPlayerID,omitempty"`
+	PlayerID      string   `json:"playerId"`
+	RoundID       int      `json:"roundId"`
+	OtherPlayerID string   `json:"otherPlayerId,omitempty"`
 	Policies      []string `json:"policies,omitempty"`
 	Party         string   `json:"party,omitempty"`
 	Token         string   `json:"token"`
 }
 
 func (e InformationEvent) Filter(ctx context.Context) Event {
-	pid := ctx.Value("playerID").(string)
+	pid, _ := ctx.Value("playerID").(string)
 	if pid != "admin" && pid != "engine" && pid != e.PlayerID {
 		if e.Policies != nil {
 			np := []string{}
@@ -324,20 +335,31 @@ func (e InformationEvent) Filter(ctx context.Context) Event {
 	return e
 }
 
+type FinishedEvent struct {
+	BaseEvent
+	WinningCondition string `json:"winningCondition"`
+	WinningParty     string `json:"winningParty"`
+}
+
+func (e FinishedEvent) Filter(ctx context.Context) Event {
+	return e
+}
+
 type RequestEvent struct {
 	BaseEvent
-	PlayerID        string   `json:"playerID"`
-	RoundID         int      `json:"roundID"`
-	PresidentID     string   `json:"presidentID,omitempty"`
-	ChancellorID    string   `json:"chancellorID,omitempty"`
+	PlayerID        string   `json:"playerId"`
+	RoundID         int      `json:"roundId"`
+	PresidentID     string   `json:"presidentId,omitempty"`
+	ChancellorID    string   `json:"chancellorId,omitempty"`
 	ExecutiveAction string   `json:"executiveAction,omitempty"`
 	Policies        []string `json:"policies,omitempty"`
+	VetoPossible    bool     `json:"vetoPossible,omitempty"`
 	Veto            bool     `json:"veto,omitempty"`
 	Token           string   `json:"token,omitempty"`
 }
 
 func (e RequestEvent) Filter(ctx context.Context) Event {
-	pid := ctx.Value("playerID").(string)
+	pid, _ := ctx.Value("playerID").(string)
 	if pid != "admin" && pid != "engine" && pid != e.PlayerID && pid != "all" {
 		if e.Policies != nil {
 			np := []string{}
@@ -352,9 +374,9 @@ func (e RequestEvent) Filter(ctx context.Context) Event {
 
 type ReactEvent struct {
 	BaseEvent
-	PlayerID      string `json:"playerID"`
-	ReactPlayerID string `json:"reactPlayerIDomitempty"`
-	ReactEventID  int    `json:"reactEventID,omitempty"`
+	PlayerID      string `json:"playerId"`
+	ReactPlayerID string `json:"reactPlayerIdomitempty"`
+	ReactEventID  int    `json:"reactEventId,omitempty"`
 	Reaction      string `json:"reaction"`
 }
 
@@ -362,17 +384,17 @@ func (e ReactEvent) Filter(ctx context.Context) Event { return e }
 
 type AssertEvent struct {
 	BaseEvent
-	PlayerID      string   `json:"playerID"`
-	RoundID       int      `json:"roundID"`
+	PlayerID      string   `json:"playerId"`
+	RoundID       int      `json:"roundId"`
 	Token         string   `json:"token"`
 	PolicySource  string   `json:"policySource,omitempty"`
 	Policies      []string `json:"policies,omitempty"`
-	OtherPlayerID string   `json:"otherPlayerID,omitempty"`
+	OtherPlayerID string   `json:"otherPlayerId,omitempty"`
 	Party         string   `json:"party,omitempty"`
 }
 
 func (e AssertEvent) Filter(ctx context.Context) Event {
-	pid := ctx.Value("playerID").(string)
+	pid, _ := ctx.Value("playerID").(string)
 	if pid != "admin" && pid != "engine" && pid != e.PlayerID {
 		e.Token = "masked"
 	}
@@ -382,15 +404,15 @@ func (e AssertEvent) Filter(ctx context.Context) Event {
 // GuessEvent is an event a player can send to make a prediction or guess as to outcomes of the game
 type GuessEvent struct {
 	BaseEvent
-	PlayerID       string   `json:"playerID"`
+	PlayerID       string   `json:"playerId"`
 	Facists        []string `json:"facists,omitempty"`
-	SecretHitlerID string   `json:"secretHitlerID,omitempty"`
+	SecretHitlerID string   `json:"secretHitlerId,omitempty"`
 	WinningParty   string   `json:"winningParty,omitempty"`
-	CallEventID    string   `json:"callEventID,omitempty"`
+	CallEventID    string   `json:"callEventId,omitempty"`
 }
 
 func (e GuessEvent) Filter(ctx context.Context) Event {
-	pid := ctx.Value("playerID").(string)
+	pid, _ := ctx.Value("playerID").(string)
 	if pid != "admin" && pid != "engine" && pid != e.PlayerID {
 		e.PlayerID = "masked"
 		nf := []string{}

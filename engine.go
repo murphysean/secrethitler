@@ -169,7 +169,10 @@ func (g Game) Engine(e Event) ([]Event, error) {
 				ge.Game.Players = append(ge.Game.Players, p)
 			}
 			ge.Game.NextPresidentID = g.Players[rand.Intn(len(g.Players)-1)].ID
-			ret = append(ret, ge)
+			ret = append(ret, ge, RequestEvent{
+				BaseEvent: BaseEvent{Type: TypeRequestAcknowledge},
+				PlayerID:  PlayerIDAll,
+			})
 		}
 	case TypePlayerAcknowledge:
 		allAck := true
@@ -191,9 +194,11 @@ func (g Game) Engine(e Event) ([]Event, error) {
 			},
 		})
 		ret = append(ret, RequestEvent{
-			BaseEvent: BaseEvent{Type: TypeRequestVote},
-			PlayerID:  PlayerIDAll,
-			RoundID:   g.Round.ID,
+			BaseEvent:    BaseEvent{Type: TypeRequestVote},
+			PlayerID:     PlayerIDAll,
+			RoundID:      g.Round.ID,
+			PresidentID:  g.Round.PresidentID,
+			ChancellorID: g.Round.ChancellorID,
 		})
 	case TypePlayerVote:
 		//If all the votes are in...
@@ -235,6 +240,10 @@ func (g Game) Engine(e Event) ([]Event, error) {
 										State:        GameStateFinished,
 										WinningParty: PartyFacist,
 									},
+								}, FinishedEvent{
+									BaseEvent:        BaseEvent{Type: TypeGameFinished},
+									WinningCondition: ConditionHitlerChancellor,
+									WinningParty:     PartyFacist,
 								})
 								return ret, nil
 							}
@@ -260,10 +269,11 @@ func (g Game) Engine(e Event) ([]Event, error) {
 					},
 				})
 				ret = append(ret, RequestEvent{
-					BaseEvent: BaseEvent{Type: TypeRequestLegislate},
-					PlayerID:  g.Round.PresidentID,
-					RoundID:   g.Round.ID,
-					Policies:  g.Draw[len(g.Draw)-3:],
+					BaseEvent:    BaseEvent{Type: TypeRequestLegislate},
+					PlayerID:     g.Round.PresidentID,
+					RoundID:      g.Round.ID,
+					Policies:     g.Draw[len(g.Draw)-3:],
+					VetoPossible: g.Facist > 4,
 					Token: createToken(g.Secret, Token{
 						EventID:     g.EventID,
 						Assertion:   TypeRequestLegislate,
@@ -293,6 +303,14 @@ func (g Game) Engine(e Event) ([]Event, error) {
 						ge.Game.PreviousEnactedPolicy = PolicyFacist
 					}
 					ge.Game.Draw = g.Draw[:len(g.Draw)-1]
+					//Shuffle if there are < 3 policies in the draw pile
+					if len(ge.Game.Draw) < 3 {
+						ge.Game.Draw = append(ge.Game.Draw, g.Discard...)
+						ge.Game.Discard = []string{"-"}
+						rand.Shuffle(len(ge.Game.Draw), func(i, j int) {
+							ge.Game.Draw[i], ge.Game.Draw[j] = ge.Game.Draw[j], ge.Game.Draw[i]
+						})
+					}
 					over := false
 					if ge.Game.Facist > 5 {
 						ge.Game.State = GameStateFinished
@@ -307,6 +325,12 @@ func (g Game) Engine(e Event) ([]Event, error) {
 					ret = append(ret, ge)
 					if !over {
 						ret = append(ret, g.createNextRound()...)
+					} else {
+						ret = append(ret, FinishedEvent{
+							BaseEvent:        BaseEvent{Type: TypeGameFinished},
+							WinningCondition: ConditionPoliciesEnacted,
+							WinningParty:     ge.Game.WinningParty,
+						})
 					}
 				} else {
 					ret = append(ret, GameEvent{
@@ -335,10 +359,11 @@ func (g Game) Engine(e Event) ([]Event, error) {
 		if le.Veto && len(g.Round.Policies) == 2 {
 			//Send out another request to the president
 			ret = append(ret, RequestEvent{
-				BaseEvent: BaseEvent{Type: TypeRequestLegislate},
-				PlayerID:  g.Round.PresidentID,
-				RoundID:   g.Round.ID,
-				Veto:      true,
+				BaseEvent:    BaseEvent{Type: TypeRequestLegislate},
+				PlayerID:     g.Round.PresidentID,
+				RoundID:      g.Round.ID,
+				VetoPossible: true,
+				Veto:         true,
 			})
 			//At this point we will want to discard the second card, but will not want to play it
 			chancellorVeto = true
@@ -428,6 +453,11 @@ func (g Game) Engine(e Event) ([]Event, error) {
 
 		ret = append(ret, ge)
 		if over {
+			ret = append(ret, FinishedEvent{
+				BaseEvent:        BaseEvent{Type: TypeGameFinished},
+				WinningCondition: ConditionPoliciesEnacted,
+				WinningParty:     ge.Game.WinningParty,
+			})
 			return ret, nil
 		}
 		//Trigger an executive action if round policies are empty
@@ -487,10 +517,11 @@ func (g Game) Engine(e Event) ([]Event, error) {
 		if len(ge.Game.Round.Policies) > 1 {
 			//Trigger a legislate chancellor with the remaining cards
 			ret = append(ret, RequestEvent{
-				BaseEvent: BaseEvent{Type: TypeRequestLegislate},
-				PlayerID:  g.Round.ChancellorID,
-				RoundID:   g.Round.ID,
-				Policies:  ge.Game.Round.Policies,
+				BaseEvent:    BaseEvent{Type: TypeRequestLegislate},
+				PlayerID:     g.Round.ChancellorID,
+				RoundID:      g.Round.ID,
+				Policies:     ge.Game.Round.Policies,
+				VetoPossible: g.Facist > 4,
 				Token: createToken(g.Secret, Token{
 					EventID:     g.EventID,
 					Assertion:   TypeRequestLegislate,
@@ -536,6 +567,10 @@ func (g Game) Engine(e Event) ([]Event, error) {
 						State:        GameStateFinished,
 						WinningParty: PartyLiberal,
 					},
+				}, FinishedEvent{
+					BaseEvent:        BaseEvent{Type: TypeGameFinished},
+					WinningCondition: ConditionHitlerExecuted,
+					WinningParty:     PartyLiberal,
 				})
 				return ret, nil
 			}

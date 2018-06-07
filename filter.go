@@ -5,7 +5,7 @@ import (
 )
 
 func (g Game) Filter(ctx context.Context) Game {
-	playerID := ctx.Value("playerID").(string)
+	playerID, _ := ctx.Value("playerID").(string)
 	if playerID == "admin" || g.State == GameStateFinished {
 		return g
 	}

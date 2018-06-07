@@ -137,7 +137,6 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 		ne.ID = g.EventID
 		ne.Moment = time.Now()
 		e = ne
-		g.State = GameStateStarted
 	case TypeRequestVote:
 		ne := e.(RequestEvent)
 		ne.ID = g.EventID
