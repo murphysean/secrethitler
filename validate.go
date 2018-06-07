@@ -270,7 +270,7 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 		if ae.PlayerID != pid {
 			return errors.New("PlayerID must match currently authenticated user")
 		}
-		if g.Round.State == RoundStateLegislating && ae.PolicySource == RoundStateLegislating {
+		if g.Round.State == RoundStateLegislating && ae.PolicySource == TypeRequestLegislate {
 			return errors.New("Can't reveal information during legislation")
 		}
 		//Token must validate
