@@ -405,7 +405,7 @@ func (e AssertEvent) Filter(ctx context.Context) Event {
 type GuessEvent struct {
 	BaseEvent
 	PlayerID       string   `json:"playerId"`
-	Facists        []string `json:"facists,omitempty"`
+	FacistIds      []string `json:"facistIds,omitempty"`
 	SecretHitlerID string   `json:"secretHitlerId,omitempty"`
 	WinningParty   string   `json:"winningParty,omitempty"`
 	CallEventID    string   `json:"callEventId,omitempty"`
