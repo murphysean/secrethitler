@@ -185,7 +185,6 @@ type Token struct {
 
 type Game struct {
 	ID                         string   `json:"id,omitempty"`
-	Name                       string   `json:"name,omitempty"`
 	Secret                     string   `json:"secret,omitempty"`
 	EventID                    int      `json:"eventId,omitempty"`
 	State                      string   `json:"state,omitempty"`
