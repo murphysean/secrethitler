@@ -154,8 +154,8 @@ func (g Game) Validate(ctx context.Context, e Event) error {
 				return errors.New("Only the president can discard the last card with a veto")
 			}
 		}
-		if g.Facist < 5 && ple.Veto {
-			return errors.New("Can only veto on the 5th facist policy")
+		if g.Fascist < 5 && ple.Veto {
+			return errors.New("Can only veto on the 5th fascist policy")
 		} else if !ple.Veto {
 			found := false
 			for _, c := range g.Round.Policies {

@@ -15,16 +15,16 @@ const (
 	PlayerIDAdmin  = "admin"
 	PlayerIDAll    = "all"
 
-	PolicyFacist  = "facist"
+	PolicyFascist = "fascist"
 	PolicyLiberal = "liberal"
 	PolicyMasked  = "masked"
 
-	RoleFacist  = "facist"
+	RoleFascist = "fascist"
 	RoleLiberal = "liberal"
 	RoleHitler  = "hitler"
 	RoleMasked  = "masked"
 
-	PartyFacist  = "facist"
+	PartyFascist = "fascist"
 	PartyLiberal = "liberal"
 	PartyMasked  = "masked"
 
@@ -191,7 +191,7 @@ type Game struct {
 	Draw                       []string `json:"draw,omitempty"`
 	Discard                    []string `json:"discard,omitempty"`
 	Liberal                    int      `json:"liberal,omitempty"`
-	Facist                     int      `json:"facist,omitempty"`
+	Fascist                    int      `json:"fascist,omitempty"`
 	ElectionTracker            int      `json:"electionTracker,omitempty"`
 	Players                    []Player `json:"players,omitempty"`
 	Round                      Round    `json:"round,omitempty"`

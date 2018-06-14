@@ -219,10 +219,10 @@ func (g Game) Apply(e Event) (Game, Event, error) {
 		} else if ne.Game.Liberal == -1 {
 			g.Liberal = 0
 		}
-		if ne.Game.Facist > 0 {
-			g.Facist = ne.Game.Facist
-		} else if ne.Game.Facist == -1 {
-			g.Facist = 0
+		if ne.Game.Fascist > 0 {
+			g.Fascist = ne.Game.Fascist
+		} else if ne.Game.Fascist == -1 {
+			g.Fascist = 0
 		}
 		if ne.Game.NextPresidentID == "-" {
 			g.NextPresidentID = ""

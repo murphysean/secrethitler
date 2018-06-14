@@ -15,7 +15,7 @@ func (g Game) Filter(ctx context.Context) Game {
 		g.Secret = "masked"
 	}
 	//Filter the draw and dscard pile
-	if g.PreviousPresidentID == playerID && g.Facist == 3 && len(g.Players) < 7 && g.PreviousEnactedPolicy == PolicyFacist {
+	if g.PreviousPresidentID == playerID && g.Fascist == 3 && len(g.Players) < 7 && g.PreviousEnactedPolicy == PolicyFascist {
 		g.Draw = maskedPolicies(g.Draw, true)
 	} else {
 		g.Draw = maskedPolicies(g.Draw, false)
@@ -41,7 +41,7 @@ func (g Game) Filter(ctx context.Context) Game {
 		if p.InvestigatedBy != "" && me.ID == p.InvestigatedBy {
 			np.Party = p.Party
 		}
-		if me.Role == RoleFacist || (len(g.Players) < 7 && me.Role == RoleHitler) {
+		if me.Role == RoleFascist || (len(g.Players) < 7 && me.Role == RoleHitler) {
 			np.Party = p.Party
 			np.Role = p.Role
 		}
