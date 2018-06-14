@@ -85,8 +85,8 @@ func (gs Game) createNextRound() []Event {
 	}}
 }
 
-func executiveAction(numPlayers, numFacistPolicies int) string {
-	switch numFacistPolicies {
+func executiveAction(numPlayers, numFascistPolicies int) string {
+	switch numFascistPolicies {
 	case 1:
 		if numPlayers > 8 {
 			return ExecutiveActionInvestigate
@@ -132,7 +132,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 			ge.Game.State = GameStateInit
 			ge.Game.Draw = make([]string, 0)
 			for i := 0; i < 11; i++ {
-				ge.Game.Draw = append(ge.Game.Draw, PolicyFacist)
+				ge.Game.Draw = append(ge.Game.Draw, PolicyFascist)
 			}
 			for i := 0; i < 6; i++ {
 				ge.Game.Draw = append(ge.Game.Draw, PolicyLiberal)
@@ -140,18 +140,18 @@ func (g Game) Engine(e Event) ([]Event, error) {
 			rand.Shuffle(len(ge.Game.Draw), func(i, j int) {
 				ge.Game.Draw[i], ge.Game.Draw[j] = ge.Game.Draw[j], ge.Game.Draw[i]
 			})
-			roles := []string{RoleLiberal, RoleLiberal, RoleLiberal, RoleHitler, RoleFacist}
+			roles := []string{RoleLiberal, RoleLiberal, RoleLiberal, RoleHitler, RoleFascist}
 			if len(g.Players) > 5 {
 				roles = append(roles, RoleLiberal)
 			}
 			if len(g.Players) > 6 {
-				roles = append(roles, RoleFacist)
+				roles = append(roles, RoleFascist)
 			}
 			if len(g.Players) > 7 {
 				roles = append(roles, RoleLiberal)
 			}
 			if len(g.Players) > 8 {
-				roles = append(roles, RoleFacist)
+				roles = append(roles, RoleFascist)
 			}
 			if len(g.Players) > 9 {
 				roles = append(roles, RoleLiberal)
@@ -164,7 +164,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 				if p.Role == RoleLiberal {
 					p.Party = PartyLiberal
 				} else {
-					p.Party = PartyFacist
+					p.Party = PartyFascist
 				}
 				ge.Game.Players = append(ge.Game.Players, p)
 			}
@@ -229,8 +229,8 @@ func (g Game) Engine(e Event) ([]Event, error) {
 				Votes:     g.Round.Votes,
 			})
 			if succeeded {
-				//If secret hitler is elected chancellor with 3 facist polices down, facists win
-				if g.Facist > 2 {
+				//If secret hitler is elected chancellor with 3 fascist polices down, fascists win
+				if g.Fascist > 2 {
 					for _, p := range g.Players {
 						if p.ID == g.Round.ChancellorID {
 							if p.Role == RoleHitler {
@@ -238,12 +238,12 @@ func (g Game) Engine(e Event) ([]Event, error) {
 									BaseEvent: BaseEvent{Type: TypeGameUpdate},
 									Game: Game{
 										State:        GameStateFinished,
-										WinningParty: PartyFacist,
+										WinningParty: PartyFascist,
 									},
 								}, FinishedEvent{
 									BaseEvent:        BaseEvent{Type: TypeGameFinished},
 									WinningCondition: ConditionHitlerChancellor,
-									WinningParty:     PartyFacist,
+									WinningParty:     PartyFascist,
 								})
 								return ret, nil
 							}
@@ -273,7 +273,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 					PlayerID:     g.Round.PresidentID,
 					RoundID:      g.Round.ID,
 					Policies:     g.Draw[len(g.Draw)-3:],
-					VetoPossible: g.Facist > 4,
+					VetoPossible: g.Fascist > 4,
 					Token: createToken(g.Secret, Token{
 						EventID:     g.EventID,
 						Assertion:   TypeRequestLegislate,
@@ -299,8 +299,8 @@ func (g Game) Engine(e Event) ([]Event, error) {
 						ge.Game.Liberal = g.Liberal + 1
 						ge.Game.PreviousEnactedPolicy = PolicyLiberal
 					} else {
-						ge.Game.Facist = g.Facist + 1
-						ge.Game.PreviousEnactedPolicy = PolicyFacist
+						ge.Game.Fascist = g.Fascist + 1
+						ge.Game.PreviousEnactedPolicy = PolicyFascist
 					}
 					ge.Game.Draw = g.Draw[:len(g.Draw)-1]
 					//Shuffle if there are < 3 policies in the draw pile
@@ -312,9 +312,9 @@ func (g Game) Engine(e Event) ([]Event, error) {
 						})
 					}
 					over := false
-					if ge.Game.Facist > 5 {
+					if ge.Game.Fascist > 5 {
 						ge.Game.State = GameStateFinished
-						ge.Game.WinningParty = PartyFacist
+						ge.Game.WinningParty = PartyFascist
 						over = true
 					}
 					if ge.Game.Liberal > 4 {
@@ -393,13 +393,13 @@ func (g Game) Engine(e Event) ([]Event, error) {
 				if ge.Game.Round.EnactedPolicy == PolicyLiberal {
 					ge.Game.Liberal = g.Liberal + 1
 				} else {
-					ge.Game.Facist = g.Facist + 1
-					//If a card was played on a facist, trigger an executive action, or ea request
-					ge.Game.Round.ExecutiveAction = executiveAction(len(g.Players), ge.Game.Facist)
+					ge.Game.Fascist = g.Fascist + 1
+					//If a card was played on a fascist, trigger an executive action, or ea request
+					ge.Game.Round.ExecutiveAction = executiveAction(len(g.Players), ge.Game.Fascist)
 				}
-				if ge.Game.Facist > 5 {
+				if ge.Game.Fascist > 5 {
 					ge.Game.State = GameStateFinished
-					ge.Game.WinningParty = PartyFacist
+					ge.Game.WinningParty = PartyFascist
 					over = true
 				}
 				if ge.Game.Liberal > 4 {
@@ -435,12 +435,12 @@ func (g Game) Engine(e Event) ([]Event, error) {
 					ge.Game.Liberal = g.Liberal + 1
 					ge.Game.PreviousEnactedPolicy = PolicyLiberal
 				} else {
-					ge.Game.Facist = g.Facist + 1
-					ge.Game.PreviousEnactedPolicy = PolicyFacist
+					ge.Game.Fascist = g.Fascist + 1
+					ge.Game.PreviousEnactedPolicy = PolicyFascist
 				}
-				if ge.Game.Facist > 5 {
+				if ge.Game.Fascist > 5 {
 					ge.Game.State = GameStateFinished
-					ge.Game.WinningParty = PartyFacist
+					ge.Game.WinningParty = PartyFascist
 					over = true
 				}
 				if ge.Game.Liberal > 4 {
@@ -462,7 +462,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 		}
 		//Trigger an executive action if round policies are empty
 		if len(ge.Game.Round.Policies) == 1 && ge.Game.Round.Policies[0] == "-" {
-			if ge.Game.Round.EnactedPolicy == PolicyFacist {
+			if ge.Game.Round.EnactedPolicy == PolicyFascist {
 				switch ge.Game.Round.ExecutiveAction {
 				case ExecutiveActionInvestigate:
 					ret = append(ret, RequestEvent{
@@ -521,7 +521,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 				PlayerID:     g.Round.ChancellorID,
 				RoundID:      g.Round.ID,
 				Policies:     ge.Game.Round.Policies,
-				VetoPossible: g.Facist > 4,
+				VetoPossible: g.Fascist > 4,
 				Token: createToken(g.Secret, Token{
 					EventID:     g.EventID,
 					Assertion:   TypeRequestLegislate,
@@ -558,7 +558,7 @@ func (g Game) Engine(e Event) ([]Event, error) {
 	case TypePlayerSpecialElection:
 		ret = append(ret, g.createNextRound()...)
 	case TypePlayerExecute:
-		//If hitler is assasinated, game over for facists
+		//If hitler is assasinated, game over for fascists
 		for _, p := range g.Players {
 			if p.Role == RoleHitler && p.ExecutedBy != "" {
 				ret = append(ret, GameEvent{
