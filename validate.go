@@ -10,6 +10,10 @@ import (
 //sends it to the event log.
 func (g Game) Validate(ctx context.Context, e Event) error {
 	pid, _ := ctx.Value("playerID").(string)
+	//Must be authenticated
+	if pid == "" {
+		return errors.New("Player not authenticated")
+	}
 	//Players must all be ready for game to start
 	switch e.GetType() {
 	case TypePlayerJoin:
